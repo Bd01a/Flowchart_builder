@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.fed.flowchart_builder.FlowChartViewGroup
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <com.fed.flowchart_builder.blocks.OperationBlockView
+        android:id="@+id/operation_block"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:width="200dp"
+        app:height="100dp"
+        app:x="100"
+        app:color_stroke="@color/colorPrimary"
+        />
+    <com.fed.flowchart_builder.blocks.OperationBlockView
+        android:id="@+id/operation_block1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:x="200"
+        app:y="300"
+        app:width="100dp"
+        app:height="100dp"
+        app:color_stroke="@color/colorAccent"
+        />
+
+</com.fed.flowchart_builder.FlowChartViewGroup>

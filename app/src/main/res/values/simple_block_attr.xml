@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SimpleBlockView">
+        <attr name="color_stroke" format="color"/>
+        <attr name="width" format="dimension"/>
+        <attr name="height" format="dimension"/>
+        <attr name="x" format="integer"/>
+        <attr name="y" format="integer"/>
+        <attr name="stroke_width" format="dimension"/>
+    </declare-styleable>
+</resources>

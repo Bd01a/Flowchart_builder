@@ -1,0 +1,20 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="SimpleBlockDefaultStyle">
+        <item name="color_stroke">@color/color_stroke_default</item>
+        <item name="width">@dimen/width_default_block</item>
+        <item name="height">@dimen/height_default_block</item>
+        <item name="stroke_width">@dimen/stroke_width_default_block</item>
+        <item name="x">0</item>
+        <item name="y">0</item>
+    </style>
+
+</resources>
