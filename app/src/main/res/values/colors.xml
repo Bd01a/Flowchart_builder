@@ -5,4 +5,6 @@
     <color name="colorAccent">#D81B60</color>
 
     <color name="color_stroke_default">#000000</color>
+    <color name="color_stroke_frame">#2196F3</color>
+    <color name="color_background">#FFFFFF</color>
 </resources>

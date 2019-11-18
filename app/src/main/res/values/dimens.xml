@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="width_default_block">16dp</dimen>
-    <dimen name="height_default_block">12dp</dimen>
+    <dimen name="width_default_block">48dp</dimen>
+    <dimen name="height_default_block">48dp</dimen>
     <dimen name="stroke_width_default_block">4dp</dimen>
+    <dimen name="stroke_width_frame_block">2dp</dimen>
+    <dimen name="width_between_frame_and_block">8dp</dimen>
+    <dimen name="icon_block_size">24dp</dimen>
+    <dimen name="distance_between_icon_and_round">4dp</dimen>
 
     <integer name="x_default_block">0</integer>
     <integer name="y_default_block">0</integer>

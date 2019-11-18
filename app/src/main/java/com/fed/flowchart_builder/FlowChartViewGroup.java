@@ -57,11 +57,21 @@ public class FlowChartViewGroup extends ViewGroup {
         ScaleGestureDetector.SimpleOnScaleGestureListener simpleOnScaleGestureListener =
                 new ScaleGestureDetector.SimpleOnScaleGestureListener(){
                     @Override
+                    public boolean onScaleBegin(ScaleGestureDetector detector) {
+//                        float newX = detector.getFocusX();
+//                        float newY = detector.getFocusY();
+//                        setTranslationX(getTranslationX() + (getPivotX() - newX) * (1 - getScaleX()));
+//                        setTranslationY(getTranslationY() + (getPivotY() - newY) * (1 - getScaleY()));
+//                        setPivotX(newX);
+//                        setPivotY(newY);
+                        return true;
+                    }
+
+                    @Override
                     public boolean onScale(ScaleGestureDetector detector) {
                         float scaleFactor = detector.getScaleFactor();
-                        float newScale = (float)Math.max(0.2, Math.min(2,scaleFactor*mCurrentScale));
-                        mCurrentScale = newScale;
-                        invalidate();
+                        mCurrentScale = (float) Math.max(0.2, Math.min(5, scaleFactor * mCurrentScale));
+                        requestLayout();
                         return true;
                     }
                 };
@@ -70,7 +80,6 @@ public class FlowChartViewGroup extends ViewGroup {
 
     @Override
     protected void dispatchDraw(Canvas canvas) {
-        canvas.scale(mCurrentScale, mCurrentScale);
         super.dispatchDraw(canvas);
     }
 
@@ -170,15 +179,31 @@ public class FlowChartViewGroup extends ViewGroup {
             final View child = getChildAt(i);
             if(child instanceof SimpleBlockView) {
                 final SimpleBlockView simpleBlockView = (SimpleBlockView)child;
-                final int childL = simpleBlockView.getPosition().x-simpleBlockView.getMeasuredWidth()/2;
-                final int childT = simpleBlockView.getPosition().y - simpleBlockView.getMeasuredHeight()/2;
-                final int childR = child.getMeasuredWidth() + childL;
-                final int childB = child.getMeasuredHeight() + childT;
+                int poxitionX = (int) (mCurrentScale * simpleBlockView.getPosition().x);
+                int poxitionY = (int) (mCurrentScale * simpleBlockView.getPosition().y);
+                int width = simpleBlockView.getMeasuredWidth();
+                int height = simpleBlockView.getMeasuredHeight();
+                if (mCurrentScale >= 1) {
+                    width = (int) (mCurrentScale * width);
+                    height = (int) (mCurrentScale * height);
+
+                } else {
+                    simpleBlockView.reSize(width, height);
+                    simpleBlockView.invalidate();
+                }
+                final int childL = poxitionX - width / 2;
+                final int childT = poxitionY - height / 2;
+                final int childR = poxitionX + width / 2;
+                final int childB = poxitionY + height / 2;
                 child.layout(childL, childT, childR, childB);
 
             }
 
         }
+    }
+
+    public float getCurrentScale() {
+        return mCurrentScale;
     }
 
     @Override
