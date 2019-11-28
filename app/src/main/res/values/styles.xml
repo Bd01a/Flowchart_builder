@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -13,8 +13,8 @@
         <item name="width">@dimen/width_default_block</item>
         <item name="height">@dimen/height_default_block</item>
         <item name="stroke_width">@dimen/stroke_width_default_block</item>
-        <item name="x">0</item>
-        <item name="y">0</item>
+        <item name="x">@integer/x_default_block</item>
+        <item name="y">@integer/y_default_block</item>
     </style>
 
 </resources>

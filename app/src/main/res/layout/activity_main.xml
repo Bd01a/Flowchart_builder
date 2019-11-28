@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.fed.flowchart_builder.FlowChartViewGroup
+<RelativeLayout android:id="@+id/linear_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,25 +7,60 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <com.fed.flowchart_builder.blocks.OperationBlockView
-        android:id="@+id/operation_block1"
-        android:layout_width="wrap_content"
+        <com.fed.flowchart_builder.FlowChartViewGroup
+            android:id="@+id/flowchart_view_group"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+
+            <com.fed.flowchart_builder.blocks.OperationBlockView
+                android:id="@+id/operation_block1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:x="200"
+                app:y="300"
+                app:height="80dp"
+                app:width="50dp"
+                app:color_stroke="@color/colorAccent" />
+
+            <com.fed.flowchart_builder.blocks.OperationBlockView
+                android:id="@+id/operation_block"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:color_stroke="@color/colorPrimary"
+                app:height="30dp"
+                app:width="50dp"
+                app:x="100" />
+
+            <com.fed.flowchart_builder.blocks.OperationBlockView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:color_stroke="@color/colorPrimary"
+                app:height="100dp"
+                app:width="20dp"
+                app:x="300"
+                app:y="1500" />
+        </com.fed.flowchart_builder.FlowChartViewGroup>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_block_create"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/margin_button_block_create"
+            android:src="@drawable/ic_add_black_24dp" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/additional_functionality_fragment"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:x="200"
-        app:y="300"
-        app:height="80dp"
-        app:width="50dp"
-        app:color_stroke="@color/colorAccent"
-        />
-
-    <com.fed.flowchart_builder.blocks.OperationBlockView
-        android:id="@+id/operation_block"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:color_stroke="@color/colorPrimary"
-        app:height="30dp"
-        app:width="50dp"
-        app:x="100" />
-
-</com.fed.flowchart_builder.FlowChartViewGroup>
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+</RelativeLayout>

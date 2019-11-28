@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Flowchart_builder</string>
+    <string name="btn_text_block_create">Создать блок</string>
+
+    <string name="block_operation">Операция</string>
+    <string name="block_condition">Условие</string>
+    <string name="block_inlet">Вход/Выход</string>
+    <string name="block_cycle">Цикл</string>
 </resources>

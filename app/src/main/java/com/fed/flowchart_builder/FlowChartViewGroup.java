@@ -1,7 +1,6 @@
 package com.fed.flowchart_builder;
 
 import android.content.Context;
-import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.util.AttributeSet;
@@ -19,6 +18,11 @@ import com.fed.flowchart_builder.blocks.SimpleBlockView;
 
 public class FlowChartViewGroup extends ViewGroup {
     private static final String TAG = "ViewGroupTag";
+
+    private static final float MIN_SCALE = 0.2f;
+    private static final float MAX_SCALE = 3f;
+    private ViewGroupMode mMode = ViewGroupMode.FREE;
+    private SimpleBlockView mCurrentSelectedView;
     private static final int MAX_BORDER = 1000;
 
     private GestureDetector mGestureDetector;
@@ -32,6 +36,7 @@ public class FlowChartViewGroup extends ViewGroup {
     private boolean mIsFirstScroll;
     private float mTouchSlop = 0.5f;
     private PointF mDownPosition;
+
 
     public FlowChartViewGroup(Context context) {
         super(context);
@@ -51,26 +56,21 @@ public class FlowChartViewGroup extends ViewGroup {
     private void init(){
         initGestureDetector();
         initScaleGestureDetector();
+
     }
 
     private void initScaleGestureDetector() {
         ScaleGestureDetector.SimpleOnScaleGestureListener simpleOnScaleGestureListener =
                 new ScaleGestureDetector.SimpleOnScaleGestureListener(){
                     @Override
-                    public boolean onScaleBegin(ScaleGestureDetector detector) {
-//                        float newX = detector.getFocusX();
-//                        float newY = detector.getFocusY();
-//                        setTranslationX(getTranslationX() + (getPivotX() - newX) * (1 - getScaleX()));
-//                        setTranslationY(getTranslationY() + (getPivotY() - newY) * (1 - getScaleY()));
-//                        setPivotX(newX);
-//                        setPivotY(newY);
-                        return true;
-                    }
-
-                    @Override
                     public boolean onScale(ScaleGestureDetector detector) {
+
                         float scaleFactor = detector.getScaleFactor();
-                        mCurrentScale = (float) Math.max(0.2, Math.min(5, scaleFactor * mCurrentScale));
+                        mCurrentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scaleFactor * mCurrentScale));
+                        if (mCurrentScale < MAX_SCALE && mCurrentScale > MIN_SCALE) {
+                            scrollTo((int) ((getScrollX() + detector.getFocusX()) * scaleFactor - detector.getFocusX()),
+                                    (int) ((getScrollY() + detector.getFocusY()) * scaleFactor - detector.getFocusY()));
+                        }
                         requestLayout();
                         return true;
                     }
@@ -78,13 +78,19 @@ public class FlowChartViewGroup extends ViewGroup {
         mScaleGestureDetector = new ScaleGestureDetector(getContext(), simpleOnScaleGestureListener);
     }
 
-    @Override
-    protected void dispatchDraw(Canvas canvas) {
-        super.dispatchDraw(canvas);
+    public void setMode(ViewGroupMode mode, SimpleBlockView view) {
+        if (!view.equals(mCurrentSelectedView) && mMode == ViewGroupMode.CHILD_IN_ACTION) {
+            mCurrentSelectedView.setIsSelected(false);
+            invalidate();
+        }
+        mMode = mode;
+        mCurrentSelectedView = view;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
+
         boolean retVal = mScaleGestureDetector.onTouchEvent(event);
         retVal = mGestureDetector.onTouchEvent(event) || retVal;
         return retVal || super.onTouchEvent(event);
@@ -93,6 +99,9 @@ public class FlowChartViewGroup extends ViewGroup {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (mMode != ViewGroupMode.FREE) {
+            return false;
+        }
         int action = ev.getAction();
         if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
             mIsScrolling = false;
@@ -126,6 +135,7 @@ public class FlowChartViewGroup extends ViewGroup {
     }
 
     private void initGestureDetector() {
+
         mScroller = new Scroller(getContext());
         GestureDetector.SimpleOnGestureListener simpleOnGestureListener =
                 new GestureDetector.SimpleOnGestureListener(){
@@ -135,6 +145,7 @@ public class FlowChartViewGroup extends ViewGroup {
                             mIsFirstScroll = false;
                             distanceX = -e2.getX()+mDownPosition.x;
                             distanceY = -e2.getY()+mDownPosition.y;
+
                         }
                             scrollBy((int) distanceX, (int) distanceY);
                         return true;
@@ -179,8 +190,8 @@ public class FlowChartViewGroup extends ViewGroup {
             final View child = getChildAt(i);
             if(child instanceof SimpleBlockView) {
                 final SimpleBlockView simpleBlockView = (SimpleBlockView)child;
-                int poxitionX = (int) (mCurrentScale * simpleBlockView.getPosition().x);
-                int poxitionY = (int) (mCurrentScale * simpleBlockView.getPosition().y);
+                int poxitionX = (int) (mCurrentScale * (simpleBlockView.getPosition().x));
+                int poxitionY = (int) (mCurrentScale * (simpleBlockView.getPosition().y));
                 int width = simpleBlockView.getMeasuredWidth();
                 int height = simpleBlockView.getMeasuredHeight();
                 if (mCurrentScale >= 1) {
@@ -217,5 +228,9 @@ public class FlowChartViewGroup extends ViewGroup {
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec),MeasureSpec.getSize(heightMeasureSpec));
     }
 
+    public enum ViewGroupMode {
+        FREE,
+        CHILD_IN_ACTION;
+    }
 
 }

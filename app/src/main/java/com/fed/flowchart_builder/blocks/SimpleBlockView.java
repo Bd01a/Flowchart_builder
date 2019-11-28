@@ -10,7 +10,6 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,6 +26,7 @@ public abstract class SimpleBlockView extends View {
     private static final float RECT_SIZE_COEF = 0.8f;
 
     private boolean mIsSelected;
+    float mParentScale;
 
     private RectF mRect;
     private RectF mFrameRect;
@@ -53,6 +53,8 @@ public abstract class SimpleBlockView extends View {
     private RectF mDeleteIconRect;
     private Drawable mResizeIcon;
     private RectF mResizeIconRect;
+    private BlockMode mBlockMode = BlockMode.FREE;
+//    PointF mLastTouch = new PointF();
 
     public SimpleBlockView(Context context) {
         super(context);
@@ -72,6 +74,19 @@ public abstract class SimpleBlockView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         boolean retVal = mGestureDetector.onTouchEvent(event);
+        if (mBlockMode == BlockMode.READY_TO_MOVING) {
+            mBlockMode = BlockMode.MOVING;
+            MotionEvent cancel = MotionEvent.obtain(event);
+            cancel.setAction(MotionEvent.ACTION_CANCEL);
+            mGestureDetector.onTouchEvent(cancel);
+
+        }
+        if (event.getAction() == MotionEvent.ACTION_CANCEL || event.getAction() == MotionEvent.ACTION_UP) {
+            if (mBlockMode != BlockMode.FREE) {
+                mBlockMode = BlockMode.FREE;
+                ((FlowChartViewGroup) getParent()).setMode(FlowChartViewGroup.ViewGroupMode.FREE, SimpleBlockView.this);
+            }
+        }
         return retVal ;
     }
 
@@ -97,6 +112,7 @@ public abstract class SimpleBlockView extends View {
         mResizeIcon = getResources().getDrawable(R.drawable.ic_resize_blue_24dp);
 
         mIconSize = getResources().getDimension(R.dimen.icon_block_size);
+        mDistanceBetweenIconAndRound = getResources().getDimension(R.dimen.distance_between_icon_and_round);
         mTranslation = new PointF();
     }
 
@@ -107,17 +123,15 @@ public abstract class SimpleBlockView extends View {
     }
 
     private void initGeom(float w, float h) {
-        float parentScale = ((FlowChartViewGroup) getParent()).getCurrentScale();
-        Log.d(TAG, "scalr: " + parentScale);
+        mParentScale = ((FlowChartViewGroup) getParent()).getCurrentScale();
         mRect = new RectF(0, 0,
-                mWidth * RECT_SIZE_COEF * parentScale, mHeight * RECT_SIZE_COEF * parentScale);
-        mCurStrokeWidth = mStrokeWidth * parentScale;
+                mWidth * RECT_SIZE_COEF * mParentScale, mHeight * RECT_SIZE_COEF * mParentScale);
+        mCurStrokeWidth = mStrokeWidth * mParentScale;
         mTranslation = new PointF((w - mRect.right) / 2, (h - mRect.bottom) / 2);
-        float widthBetweenFrameAndBlock = mTranslation.x / 2;
-        widthBetweenFrameAndBlock -= mStrokeWidthFrame / 2;
-        mFrameRect = new RectF(mRect.left - widthBetweenFrameAndBlock, mRect.top - widthBetweenFrameAndBlock,
-                mRect.right + widthBetweenFrameAndBlock, mRect.bottom + widthBetweenFrameAndBlock);
-        mDistanceBetweenIconAndRound = getResources().getDimension(R.dimen.distance_between_icon_and_round);
+        PointF widthBetweenIconAndBlock = new PointF(mTranslation.x / 2 - mStrokeWidthFrame / 2,
+                mTranslation.y / 2 - mStrokeWidthFrame / 2);
+        mFrameRect = new RectF(mRect.left - widthBetweenIconAndBlock.x, mRect.top - widthBetweenIconAndBlock.y,
+                mRect.right + widthBetweenIconAndBlock.x, mRect.bottom + widthBetweenIconAndBlock.y);
         mDeleteIconRect = new RectF(-mTranslation.x + mStrokeWidthFrame / 2, -mTranslation.y + mStrokeWidthFrame / 2,
                 -mTranslation.x + mStrokeWidthFrame / 2 + mIconSize, -mTranslation.y + mStrokeWidthFrame / 2 + mIconSize);
         mResizeIconRect = new RectF(w - mTranslation.x - mStrokeWidthFrame / 2 - mIconSize, h - mTranslation.y - mStrokeWidthFrame / 2 - mIconSize,
@@ -132,20 +146,46 @@ public abstract class SimpleBlockView extends View {
                 new GestureDetector.SimpleOnGestureListener() {
                     @Override
                     public boolean onSingleTapUp(MotionEvent e) {
-                        if (isInRect(mDeleteIconRect, e.getX(), e.getY())) {
-                            deleteSelf();
-                        } else {
-                            setIsSelected(!mIsSelected);
+                        if (mIsSelected) {
+                            if (isInRect(mDeleteIconRect, e.getX(), e.getY())) {
+                                deleteSelf();
+                            }
+
                         }
+                        setIsSelected(!mIsSelected);
+
                         invalidate();
                         return true;
                     }
 
                     @Override
                     public boolean onDown(MotionEvent e) {
+                        if (mIsSelected) {
+                            if (!isInRect(mDeleteIconRect, e.getX(), e.getY())) {
+                                mBlockMode = BlockMode.MOVING;
+                            }
+                            ((FlowChartViewGroup) getParent()).setMode(FlowChartViewGroup.ViewGroupMode.CHILD_IN_ACTION, SimpleBlockView.this);
+//                            Toast.makeText(getContext(), "onDown", Toast.LENGTH_SHORT).show();
+                        }
+
                         return true;
                     }
 
+                    @Override
+                    public void onLongPress(MotionEvent e) {
+                        mBlockMode = BlockMode.READY_TO_MOVING;
+                        ((FlowChartViewGroup) getParent()).setMode(FlowChartViewGroup.ViewGroupMode.CHILD_IN_ACTION, SimpleBlockView.this);
+//                        Toast.makeText(getContext(), "onLongPress", Toast.LENGTH_SHORT).show();
+
+                    }
+
+                    @Override
+                    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                        float scale = ((FlowChartViewGroup) getParent()).getCurrentScale();
+                        translate((e1.getX() - e2.getX()) / scale, (e1.getY() - e2.getY()) / scale);
+                        getParent().requestLayout();
+                        return true;
+                    }
                 };
         mGestureDetector = new GestureDetector(getContext(), simpleOnGestureListener);
     }
@@ -209,8 +249,8 @@ public abstract class SimpleBlockView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
-        int widthMeasured = (int) (mWidth);
-        int heightMeasured = (int) (mHeight);
+        int widthMeasured = (int) (mWidth * RECT_SIZE_COEF + mStrokeWidthFrame + mIconSize);
+        int heightMeasured = (int) (mHeight * RECT_SIZE_COEF + mStrokeWidthFrame + mIconSize);
 
         setMeasuredDimension(resolveSize(widthMeasured, widthMeasureSpec),
                 resolveSize(heightMeasured, heightMeasureSpec));
@@ -242,8 +282,8 @@ public abstract class SimpleBlockView extends View {
     }
 
     public void translate(float x, float y){
-        mPosition.x+=x;
-        mPosition.y+=y;
+        mPosition.x -= x;
+        mPosition.y -= y;
     }
 
     private boolean isInRect(RectF rect, float x, float y) {
@@ -259,13 +299,22 @@ public abstract class SimpleBlockView extends View {
 //    public abstract boolean isInBlock(float x, float y);
     public void setIsSelected(boolean isSelected){
         mIsSelected = isSelected;
+        if (!isSelected) {
+            mBlockMode = BlockMode.FREE;
+        }
     }
     public boolean isSelected(){
         return mIsSelected;
     }
 
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return super.equals(obj);
+    }
 
-
-
-
+    enum BlockMode {
+        FREE,
+        READY_TO_MOVING,
+        MOVING;
+    }
 }
