@@ -27,7 +27,7 @@ public class OperationBlockView extends SimpleBlockView {
 
     @Override
     public void drawUnSelected(Canvas canvas) {
-
+        super.drawUnSelected(canvas);
         canvas.drawRect(getRect(), getPaint());
 
     }

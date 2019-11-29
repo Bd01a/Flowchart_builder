@@ -6,4 +6,15 @@
     <string name="block_condition">Условие</string>
     <string name="block_inlet">Вход/Выход</string>
     <string name="block_cycle">Цикл</string>
+    <string name="dialog_block_settings_title">Настройки</string>
+    <string name="text_textview_block_settings_text">Текст</string>
+    <string name="text_textview_block_settings_width">ширина</string>
+    <string name="text_textview_block_settings_height">высота</string>
+    <string name="text_textview_block_settings_stroke_width">ширина линии</string>
+    <string name="text_textview_block_settings_color">цвет</string>
+    <string name="text_default_block">Текст блока</string>
+    <string name="text_positive_button_dialog_block_settings">Применить</string>
+    <string name="text_negative_button_dialog_block_settings">Отмена</string>
+    <string name="text_textview_block_settings_text_size">ширина текста</string>
+    <string name="text_textview_block_settings_text_color">цвет текста</string>
 </resources>

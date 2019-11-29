@@ -17,6 +17,8 @@ public class ConditionBlockView extends SimpleBlockView {
 
     @Override
     public void drawUnSelected(Canvas canvas) {
+        super.drawUnSelected(canvas);
+
         float middleX = (getRect().right - getRect().left) / 2;
         float middleY = (getRect().bottom - getRect().top) / 2;
 

@@ -3,6 +3,7 @@
     <dimen name="width_default_block">52dp</dimen>
     <dimen name="height_default_block">52dp</dimen>
     <dimen name="stroke_width_default_block">4dp</dimen>
+    <dimen name="text_size_default_block">12dp</dimen>
     <dimen name="stroke_width_frame_block">2dp</dimen>
     <dimen name="width_between_frame_and_block">8dp</dimen>
     <dimen name="icon_block_size">24dp</dimen>
@@ -10,6 +11,10 @@
     <dimen name="padding_blocks_item">4dp</dimen>
     <dimen name="margin_button_block_create">12dp</dimen>
     <dimen name="margin_block_create_fragment">4dp</dimen>
+    <dimen name="radius_card_block_create_fragment">4dp</dimen>
+    <dimen name="padding_cardview_block_create_fragment">4dp</dimen>
+    <dimen name="padding_layout_block_item">8dp</dimen>
+    <dimen name="padding_block_settings">8dp</dimen>
 
     <integer name="x_default_block">400</integer>
     <integer name="y_default_block">1000</integer>

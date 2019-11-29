@@ -15,6 +15,9 @@
         <item name="stroke_width">@dimen/stroke_width_default_block</item>
         <item name="x">@integer/x_default_block</item>
         <item name="y">@integer/y_default_block</item>
+        <item name="text">@string/text_default_block</item>
+        <item name="text_size">@dimen/text_size_default_block</item>
+        <item name="text_color">@color/color_text_default</item>
     </style>
 
 </resources>

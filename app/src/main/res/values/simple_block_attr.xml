@@ -7,5 +7,8 @@
         <attr name="x" format="integer"/>
         <attr name="y" format="integer"/>
         <attr name="stroke_width" format="dimension"/>
+        <attr name="text" format="string" />
+        <attr name="text_size" format="dimension" />
+        <attr name="text_color" format="color" />
     </declare-styleable>
 </resources>

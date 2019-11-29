@@ -48,14 +48,9 @@
                 app:y="1500" />
         </com.fed.flowchart_builder.FlowChartViewGroup>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/btn_block_create"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="@dimen/margin_button_block_create"
-            android:src="@drawable/ic_add_black_24dp" />
+
     </LinearLayout>
+
 
     <FrameLayout
         android:id="@+id/additional_functionality_fragment"
@@ -63,4 +58,13 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_block_create"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="@dimen/margin_button_block_create"
+        android:src="@drawable/ic_add_black_24dp" />
 </RelativeLayout>

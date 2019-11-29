@@ -7,10 +7,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.fed.flowchart_builder.blocks.OperationBlockView;
 import com.fed.flowchart_builder.fragments.BlockCreateFragment;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
 
     private FlowChartViewGroup mFlowChartViewGroup;
+    private FloatingActionButton mFloatingActionButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.btn_block_create).setOnClickListener(new View.OnClickListener() {
+        mFloatingActionButton = findViewById(R.id.btn_block_create);
+        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getSupportFragmentManager()
@@ -36,7 +39,14 @@ public class MainActivity extends AppCompatActivity {
                         .addToBackStack(null)
                         .add(R.id.additional_functionality_fragment, blockCreateFragment)
                         .commit();
+                mFloatingActionButton.setVisibility(View.INVISIBLE);
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        mFloatingActionButton.setVisibility(View.VISIBLE);
     }
 }

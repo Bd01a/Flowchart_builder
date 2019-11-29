@@ -78,18 +78,27 @@ public class FlowChartViewGroup extends ViewGroup {
         mScaleGestureDetector = new ScaleGestureDetector(getContext(), simpleOnScaleGestureListener);
     }
 
-    public void setMode(ViewGroupMode mode, SimpleBlockView view) {
-        if (!view.equals(mCurrentSelectedView) && mMode == ViewGroupMode.CHILD_IN_ACTION) {
+    public void setMode(ViewGroupMode mode) {
+        mMode = mode;
+    }
+
+    public void selectChild(SimpleBlockView view) {
+        if (!view.equals(mCurrentSelectedView) && mCurrentSelectedView != null) {
             mCurrentSelectedView.setIsSelected(false);
             invalidate();
         }
-        mMode = mode;
         mCurrentSelectedView = view;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            final float xDiff = calculateDistance(event);
+            if (xDiff < mTouchSlop) {
+//               mCurrentSelectedView.set
+            }
+        }
 
         boolean retVal = mScaleGestureDetector.onTouchEvent(event);
         retVal = mGestureDetector.onTouchEvent(event) || retVal;
@@ -104,6 +113,7 @@ public class FlowChartViewGroup extends ViewGroup {
         }
         int action = ev.getAction();
         if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
+
             mIsScrolling = false;
             return false;
         }
