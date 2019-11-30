@@ -27,13 +27,13 @@
                 app:y="300"
                 app:height="80dp"
                 app:width="50dp"
-                app:color_stroke="@color/colorAccent" />
+                app:color_stroke="@color/blue" />
 
             <com.fed.flowchart_builder.blocks.OperationBlockView
                 android:id="@+id/operation_block"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:color_stroke="@color/colorPrimary"
+                app:color_stroke="@color/yellow"
                 app:height="30dp"
                 app:width="50dp"
                 app:x="100" />
@@ -41,7 +41,7 @@
             <com.fed.flowchart_builder.blocks.OperationBlockView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:color_stroke="@color/colorPrimary"
+                app:color_stroke="@color/dark_blue"
                 app:height="100dp"
                 app:width="20dp"
                 app:x="300"

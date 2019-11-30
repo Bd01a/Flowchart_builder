@@ -202,16 +202,40 @@ public class FlowChartViewGroup extends ViewGroup {
                 final SimpleBlockView simpleBlockView = (SimpleBlockView)child;
                 int poxitionX = (int) (mCurrentScale * (simpleBlockView.getPosition().x));
                 int poxitionY = (int) (mCurrentScale * (simpleBlockView.getPosition().y));
-                int width = simpleBlockView.getMeasuredWidth();
-                int height = simpleBlockView.getMeasuredHeight();
-                if (mCurrentScale >= 1) {
-                    width = (int) (mCurrentScale * width);
-                    height = (int) (mCurrentScale * height);
+//                int width = simpleBlockView.getMeasuredWidth();
+//                int height = simpleBlockView.getMeasuredHeight();
+//
+//                float iconSize = getResources().getDimension(R.dimen.icon_block_size);
+//                float widthStroke = getResources().getDimension(R.dimen.stroke_width_frame_block);
+//                int iconSizeRequire = (int)(widthStroke+iconSize);
+//
+//                if (iconSizeRequire*2<width*mCurrentScale || iconSizeRequire*2<height*mCurrentScale) {
+//                    width = (int) (mCurrentScale * width);
+//                    height = (int) (mCurrentScale * height);
+//
+//                } else {
+//                    if(iconSizeRequire*2<width*mCurrentScale) {
+//                        width = 2 * iconSizeRequire;
+//                    }
+//                    if(iconSizeRequire*2<height*mCurrentScale) {
+//                        height = 2 * iconSizeRequire;
+//                    }
+//                    simpleBlockView.reSize(width, height);
+//                    simpleBlockView.invalidate();
+//                }
 
-                } else {
-                    simpleBlockView.reSize(width, height);
-                    simpleBlockView.invalidate();
-                }
+
+//                if (mCurrentScale >= 1) {
+//                    width = (int) (mCurrentScale * width);
+//                    height = (int) (mCurrentScale * height);
+//
+//                }
+//                else {
+//                    simpleBlockView.reSize(width, height);
+//                    simpleBlockView.invalidate();
+//                }
+                int width = (int) ((SimpleBlockView) child).getParams().x;
+                int height = (int) ((SimpleBlockView) child).getParams().y;
                 final int childL = poxitionX - width / 2;
                 final int childT = poxitionY - height / 2;
                 final int childR = poxitionX + width / 2;

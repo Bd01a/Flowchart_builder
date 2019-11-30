@@ -34,7 +34,7 @@ import java.util.List;
 public abstract class SimpleBlockView extends View {
     private static final String TAG = "SimpleBlockViewTAG";
 
-    private static final float RECT_SIZE_COEF = 0.8f;
+    private static final float RECT_SIZE_COEF = 1f;
     private static final float MIN_SIZE = 50f;
     private static final float MAX_SIZE = 800f;
 
@@ -151,6 +151,7 @@ public abstract class SimpleBlockView extends View {
 
     private void initGeom(float w, float h) {
         mParentScale = ((FlowChartViewGroup) getParent()).getCurrentScale();
+        Log.d("ScaleParent", "parent scale = " + mParentScale);
         mRect = new RectF(0, 0,
                 mWidth * RECT_SIZE_COEF * mParentScale, mHeight * RECT_SIZE_COEF * mParentScale);
         mCurStrokeWidth = mStrokeWidth * mParentScale;
@@ -167,6 +168,12 @@ public abstract class SimpleBlockView extends View {
         mCurTextSize = mTextSize * mParentScale;
     }
 
+    public PointF getParams() {
+        mParentScale = ((FlowChartViewGroup) getParent()).getCurrentScale();
+        mRect = new RectF(0, 0,
+                mWidth * RECT_SIZE_COEF * mParentScale, mHeight * RECT_SIZE_COEF * mParentScale);
+        return new PointF(mRect.width(), mRect.height());
+    }
 
     private void initGestureDetector() {
 
@@ -203,8 +210,6 @@ public abstract class SimpleBlockView extends View {
                                 mBlockMode = BlockMode.MOVING;
                                 ((FlowChartViewGroup) getParent()).setMode(FlowChartViewGroup.ViewGroupMode.CHILD_IN_ACTION);
                             }
-//                            ((FlowChartViewGroup) getParent()).setMode(FlowChartViewGroup.ViewGroupMode.CHILD_IN_ACTION, SimpleBlockView.this);
-//                            Toast.makeText(getContext(), "onDown", Toast.LENGTH_SHORT).show();
                         }
                         return true;
                     }
@@ -240,19 +245,28 @@ public abstract class SimpleBlockView extends View {
         final EditText strokeWidthEditText = view.findViewById(R.id.edittext_block_settings_stroke_width);
         final EditText textSizeEditText = view.findViewById(R.id.edittext_block_settings_text_size);
 
-        Spinner colorSpinner = view.findViewById(R.id.spinner_block_settings_color);
-        Spinner textColorSpinner = view.findViewById(R.id.spinner_block_settings_text_color);
+        final Spinner colorSpinner = view.findViewById(R.id.spinner_block_settings_color);
+        final Spinner textColorSpinner = view.findViewById(R.id.spinner_block_settings_text_color);
 
         int[] objects = getResources().getIntArray(R.array.available_colors);
         List<Integer> colors = new ArrayList<>();
-        for (int object :
-                objects) {
-            colors.add(new Integer(object));
+        int positionTextColor = 0;
+        int positionColorStroke = 0;
+        for (int object : objects) {
+            colors.add(object);
+            if (mTextColor == object) {
+                positionTextColor = colors.size() - 1;
+            }
+            if (mColorStroke == object) {
+                positionColorStroke = colors.size() - 1;
+            }
         }
         ColorArrayAdapter colorArrayAdapter = new ColorArrayAdapter(getContext(), android.R.layout.simple_expandable_list_item_1,
                 colors);
         colorSpinner.setAdapter(colorArrayAdapter);
+        colorSpinner.setSelection(positionColorStroke);
         textColorSpinner.setAdapter(colorArrayAdapter);
+        textColorSpinner.setSelection(positionTextColor);
 
         textEditText.setText(mText);
         widthEditText.setText(String.valueOf((int) mWidth));
@@ -271,6 +285,8 @@ public abstract class SimpleBlockView extends View {
                         mHeight = Float.valueOf(heightEditText.getText().toString());
                         mStrokeWidth = Float.valueOf(strokeWidthEditText.getText().toString());
                         mTextSize = Float.valueOf(textSizeEditText.getText().toString());
+                        mColorStroke = (int) (colorSpinner.getSelectedItem());
+                        mTextColor = (int) (textColorSpinner.getSelectedItem());
                         reInit();
                     }
                 });
@@ -291,7 +307,7 @@ public abstract class SimpleBlockView extends View {
         initTextPaint();
         initFramePaints();
         specifyBorders();
-        invalidate();
+        requestLayout();
     }
 
     private void resizeRect(float x, float y) {
@@ -372,8 +388,8 @@ public abstract class SimpleBlockView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
-        int widthMeasured = (int) (mWidth * RECT_SIZE_COEF + mStrokeWidthFrame + mIconSize);
-        int heightMeasured = (int) (mHeight * RECT_SIZE_COEF + mStrokeWidthFrame + mIconSize);
+        int widthMeasured = (int) (mWidth * RECT_SIZE_COEF + mStrokeWidth + mStrokeWidthFrame + mIconSize);
+        int heightMeasured = (int) (mHeight * RECT_SIZE_COEF + mStrokeWidth + mStrokeWidthFrame + mIconSize);
 
         setMeasuredDimension(resolveSize(widthMeasured, widthMeasureSpec),
                 resolveSize(heightMeasured, heightMeasureSpec));
@@ -381,7 +397,6 @@ public abstract class SimpleBlockView extends View {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-
         reSize(w, h);
         super.onSizeChanged(w, h, oldw, oldh);
     }

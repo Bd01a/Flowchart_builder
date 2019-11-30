@@ -4,8 +4,8 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
 
-    <color name="color_stroke_default">#8BC34A</color>
-    <color name="color_text_default">#000000</color>
+    <color name="color_stroke_default">@color/black</color>
+    <color name="color_text_default">@color/black</color>
     <color name="color_stroke_frame">#2196F3</color>
     <color name="color_background">#FFFFFF</color>
     <color name="color_block_create_background">#EEEBEB</color>
