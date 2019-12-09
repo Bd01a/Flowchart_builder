@@ -20,4 +20,9 @@
         <item name="text_color">@color/color_text_default</item>
     </style>
 
+    <style name="SimpleLineDefault">
+        <item name="color_stroke_line">@color/color_stroke_default_line</item>
+        <item name="stroke_width_line">@dimen/stroke_width_default_line</item>
+    </style>
+
 </resources>

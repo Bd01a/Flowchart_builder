@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SimpleLine">
+        <attr name="color_stroke_line" format="color" />
+        <attr name="stroke_width_line" format="dimension" />
+    </declare-styleable>
+</resources>

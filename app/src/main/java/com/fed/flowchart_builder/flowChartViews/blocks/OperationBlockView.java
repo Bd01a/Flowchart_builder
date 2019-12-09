@@ -1,4 +1,4 @@
-package com.fed.flowchart_builder.blocks;
+package com.fed.flowchart_builder.flowChartViews.blocks;
 
 import android.content.Context;
 import android.graphics.Canvas;

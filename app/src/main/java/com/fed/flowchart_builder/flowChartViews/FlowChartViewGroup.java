@@ -1,4 +1,4 @@
-package com.fed.flowchart_builder;
+package com.fed.flowchart_builder.flowChartViews;
 
 import android.content.Context;
 import android.graphics.PointF;
@@ -11,16 +11,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Scroller;
 
-import com.fed.flowchart_builder.blocks.SimpleBlockView;
-
-
+import com.fed.flowchart_builder.flowChartViews.blocks.SimpleBlockView;
+import com.fed.flowchart_builder.flowChartViews.lines.LineManager;
+import com.fed.flowchart_builder.flowChartViews.lines.SimpleLine;
 
 
 public class FlowChartViewGroup extends ViewGroup {
     private static final String TAG = "ViewGroupTag";
 
-    private static final float MIN_SCALE = 0.2f;
-    private static final float MAX_SCALE = 3f;
+    private static final float MIN_SCALE = 0.1f;
+    private static final float MAX_SCALE = 6f;
     private ViewGroupMode mMode = ViewGroupMode.FREE;
     private SimpleBlockView mCurrentSelectedView;
     private static final int MAX_BORDER = 1000;
@@ -37,6 +37,7 @@ public class FlowChartViewGroup extends ViewGroup {
     private float mTouchSlop = 0.5f;
     private PointF mDownPosition;
 
+    private LineManager mLineManager;
 
     public FlowChartViewGroup(Context context) {
         super(context);
@@ -57,6 +58,11 @@ public class FlowChartViewGroup extends ViewGroup {
         initGestureDetector();
         initScaleGestureDetector();
 
+        mLineManager = new LineManager(getContext(), this);
+    }
+
+    public LineManager getLineManager() {
+        return mLineManager;
     }
 
     private void initScaleGestureDetector() {
@@ -125,6 +131,7 @@ public class FlowChartViewGroup extends ViewGroup {
                 mIsFirstScroll=true;
                 break;
             case MotionEvent.ACTION_MOVE: {
+
                 if (mIsScrolling) {
                     return true;
                 }
@@ -196,52 +203,32 @@ public class FlowChartViewGroup extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        mLineManager.update();
         for (int i = 0; i < getChildCount(); i++) {
             final View child = getChildAt(i);
             if(child instanceof SimpleBlockView) {
                 final SimpleBlockView simpleBlockView = (SimpleBlockView)child;
-                int poxitionX = (int) (mCurrentScale * (simpleBlockView.getPosition().x));
-                int poxitionY = (int) (mCurrentScale * (simpleBlockView.getPosition().y));
-//                int width = simpleBlockView.getMeasuredWidth();
-//                int height = simpleBlockView.getMeasuredHeight();
-//
-//                float iconSize = getResources().getDimension(R.dimen.icon_block_size);
-//                float widthStroke = getResources().getDimension(R.dimen.stroke_width_frame_block);
-//                int iconSizeRequire = (int)(widthStroke+iconSize);
-//
-//                if (iconSizeRequire*2<width*mCurrentScale || iconSizeRequire*2<height*mCurrentScale) {
-//                    width = (int) (mCurrentScale * width);
-//                    height = (int) (mCurrentScale * height);
-//
-//                } else {
-//                    if(iconSizeRequire*2<width*mCurrentScale) {
-//                        width = 2 * iconSizeRequire;
-//                    }
-//                    if(iconSizeRequire*2<height*mCurrentScale) {
-//                        height = 2 * iconSizeRequire;
-//                    }
-//                    simpleBlockView.reSize(width, height);
-//                    simpleBlockView.invalidate();
-//                }
-
-
-//                if (mCurrentScale >= 1) {
-//                    width = (int) (mCurrentScale * width);
-//                    height = (int) (mCurrentScale * height);
-//
-//                }
-//                else {
-//                    simpleBlockView.reSize(width, height);
-//                    simpleBlockView.invalidate();
-//                }
-                int width = (int) ((SimpleBlockView) child).getParams().x;
-                int height = (int) ((SimpleBlockView) child).getParams().y;
-                final int childL = poxitionX - width / 2;
-                final int childT = poxitionY - height / 2;
-                final int childR = poxitionX + width / 2;
-                final int childB = poxitionY + height / 2;
+                simpleBlockView.updateGeomOptions();
+                int positionX = (int) (mCurrentScale * (simpleBlockView.getPosition().x));
+                int positionY = (int) (mCurrentScale * (simpleBlockView.getPosition().y));
+                int width = (int) ((SimpleBlockView) child).getGeomOptions().x;
+                int height = (int) ((SimpleBlockView) child).getGeomOptions().y;
+                final int childL = positionX - width / 2;
+                final int childT = positionY - height / 2;
+                final int childR = positionX + width / 2;
+                final int childB = positionY + height / 2;
                 child.layout(childL, childT, childR, childB);
-
+            } else if (child instanceof SimpleLine) {
+                float width = mCurrentScale * ((SimpleLine) child).getLineWidth();
+                float height = mCurrentScale * ((SimpleLine) child).getLineHeight();
+                float positionX = mCurrentScale * ((SimpleLine) child).getLineX();
+                float positionY = mCurrentScale * ((SimpleLine) child).getLineY();
+                final int childL = (int) positionX;
+                final int childT = (int) positionY;
+                final int childR = (int) (positionX + width);
+                final int childB = (int) (positionY + height);
+                child.invalidate();
+                child.layout(childL, childT, childR, childB);
             }
 
         }

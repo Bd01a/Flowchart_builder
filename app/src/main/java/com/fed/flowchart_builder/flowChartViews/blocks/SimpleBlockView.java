@@ -1,4 +1,4 @@
-package com.fed.flowchart_builder.blocks;
+package com.fed.flowchart_builder.flowChartViews.blocks;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,9 +24,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
-import com.fed.flowchart_builder.FlowChartViewGroup;
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.adapters.ColorArrayAdapter;
+import com.fed.flowchart_builder.flowChartViews.FlowChartViewGroup;
+import com.fed.flowchart_builder.flowChartViews.lines.SimpleLine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +42,8 @@ public abstract class SimpleBlockView extends View {
     private boolean mIsSelected;
 
 
-    private RectF mRect;
-    private RectF mFrameRect;
+    private RectF mRect = new RectF();
+    private RectF mFrameRect = new RectF();
     private Paint mPaint;
     private Paint mFramePaint;
     private Paint mFrameFillPaint;
@@ -71,10 +72,17 @@ public abstract class SimpleBlockView extends View {
     private GestureDetector mGestureDetector;
 
     private Drawable mDeleteIcon;
-    private RectF mDeleteIconRect;
+    private RectF mDeleteIconRect = new RectF();
     private Drawable mResizeIcon;
-    private RectF mResizeIconRect;
+    private RectF mResizeIconRect = new RectF();
+    private Drawable mAddLineIcon;
+    private RectF mAddLineIconRectLeft = new RectF();
+    private RectF mAddLineIconRectTop = new RectF();
+    private RectF mAddLineIconRectRight = new RectF();
+    private RectF mAddLineIconRectBottom = new RectF();
     private BlockMode mBlockMode = BlockMode.FREE;
+
+    private PointF geomOptions = new PointF(0, 0);
 
     public SimpleBlockView(Context context) {
         super(context);
@@ -126,6 +134,7 @@ public abstract class SimpleBlockView extends View {
 
         mDeleteIcon = getResources().getDrawable(R.drawable.ic_delete_blue_24dp);
         mResizeIcon = getResources().getDrawable(R.drawable.ic_resize_blue_24dp);
+        mAddLineIcon = getResources().getDrawable(R.drawable.ic_add_circle_outline_blue_24dp);
 
         mIconSize = getResources().getDimension(R.dimen.icon_block_size);
         mDistanceBetweenIconAndRound = getResources().getDimension(R.dimen.distance_between_icon_and_round);
@@ -142,37 +151,98 @@ public abstract class SimpleBlockView extends View {
         mHeight = mHeight > MAX_SIZE ? MAX_SIZE : mHeight;
     }
 
+//
+//    public void reSize(float w, float h) {
+//        initGeom(w, h);
+//        initPaint();
+//        initTextPaint();
+//    }
 
-    public void reSize(float w, float h) {
-        initGeom(w, h);
+    //    private void initGeom(float w, float h) {
+//        mParentScale = ((FlowChartViewGroup) getParent()).getCurrentScale();
+//        Log.d("ScaleParent", "parent scale = " + mParentScale);
+//        mRect = new RectF(0, 0,
+//                mWidth * RECT_SIZE_COEF * mParentScale, mHeight * RECT_SIZE_COEF * mParentScale);
+//        mCurStrokeWidth = mStrokeWidth * mParentScale;
+//        mTranslation = new PointF((w - mRect.right) / 2, (h - mRect.bottom) / 2);
+//        PointF widthBetweenIconAndBlock = new PointF(mTranslation.x / 2 - mStrokeWidthFrame / 2,
+//                mTranslation.y / 2 - mStrokeWidthFrame / 2);
+//        mFrameRect = new RectF(mRect.left - widthBetweenIconAndBlock.x, mRect.top - widthBetweenIconAndBlock.y,
+//                mRect.right + widthBetweenIconAndBlock.x, mRect.bottom + widthBetweenIconAndBlock.y);
+//        mDeleteIconRect = new RectF(-mTranslation.x + mStrokeWidthFrame / 2, -mTranslation.y + mStrokeWidthFrame / 2,
+//                -mTranslation.x + mStrokeWidthFrame / 2 + mIconSize, -mTranslation.y + mStrokeWidthFrame / 2 + mIconSize);
+//        mResizeIconRect = new RectF(w - mTranslation.x - mStrokeWidthFrame / 2 - mIconSize, h - mTranslation.y - mStrokeWidthFrame / 2 - mIconSize,
+//                w - mTranslation.x - mStrokeWidthFrame / 2, h - mTranslation.y - mStrokeWidthFrame / 2);
+//
+//        mCurTextSize = mTextSize * mParentScale;
+//    }
+    public float getOriginalWidth() {
+        return mWidth;
+    }
+
+    public float getOriginalHeight() {
+        return mHeight;
+    }
+
+    public void updateGeomOptions() {
+        mParentScale = ((FlowChartViewGroup) getParent()).getCurrentScale();
+
+        mRect.left = 0;
+        mRect.top = 0;
+        mRect.right = mWidth * mParentScale;
+        mRect.bottom = mHeight * mParentScale;
+
+        float widthBeetwenFrameAndBlock = getResources().getDimension(R.dimen.width_between_frame_and_block);
+        mCurStrokeWidth = mStrokeWidth * mParentScale;
+
+        mFrameRect.left = mRect.left - widthBeetwenFrameAndBlock;
+        mFrameRect.top = mRect.top - widthBeetwenFrameAndBlock;
+        mFrameRect.right = mRect.right + widthBeetwenFrameAndBlock;
+        mFrameRect.bottom = mRect.bottom + widthBeetwenFrameAndBlock;
+
+        mDeleteIconRect.left = mFrameRect.left - mIconSize / 2;
+        mDeleteIconRect.top = mFrameRect.top - mIconSize / 2;
+        mDeleteIconRect.right = mFrameRect.left + mIconSize / 2;
+        mDeleteIconRect.bottom = mFrameRect.top + mIconSize / 2;
+
+        mResizeIconRect.left = mFrameRect.right - mIconSize / 2;
+        mResizeIconRect.top = mFrameRect.bottom - mIconSize / 2;
+        mResizeIconRect.right = mFrameRect.right + mIconSize / 2;
+        mResizeIconRect.bottom = mFrameRect.bottom + mIconSize / 2;
+
+        mAddLineIconRectBottom.left = mFrameRect.left + mFrameRect.width() / 2 - mIconSize / 2;
+        mAddLineIconRectBottom.top = mFrameRect.bottom - mIconSize / 2;
+        mAddLineIconRectBottom.right = mFrameRect.left + mFrameRect.width() / 2 + mIconSize / 2;
+        mAddLineIconRectBottom.bottom = mFrameRect.bottom + mIconSize / 2;
+
+        mAddLineIconRectTop.left = mFrameRect.left + mFrameRect.width() / 2 - mIconSize / 2;
+        mAddLineIconRectTop.top = mFrameRect.top - mIconSize / 2;
+        mAddLineIconRectTop.right = mFrameRect.left + mFrameRect.width() / 2 + mIconSize / 2;
+        mAddLineIconRectTop.bottom = mFrameRect.top + mIconSize / 2;
+
+        mAddLineIconRectLeft.left = mFrameRect.left - mIconSize / 2;
+        mAddLineIconRectLeft.top = mFrameRect.top + mFrameRect.height() / 2 - mIconSize / 2;
+        mAddLineIconRectLeft.right = mFrameRect.left + mIconSize / 2;
+        mAddLineIconRectLeft.bottom = mFrameRect.top + mFrameRect.height() / 2 + mIconSize / 2;
+
+        mAddLineIconRectRight.left = mFrameRect.right - mIconSize / 2;
+        mAddLineIconRectRight.top = mFrameRect.top + mFrameRect.height() / 2 - mIconSize / 2;
+        mAddLineIconRectRight.right = mFrameRect.right + mIconSize / 2;
+        mAddLineIconRectRight.bottom = mFrameRect.top + mFrameRect.height() / 2 + mIconSize / 2;
+
+        mTranslation.x = widthBeetwenFrameAndBlock + mIconSize / 2 + mStrokeWidthFrame / 2;
+        mTranslation.y = widthBeetwenFrameAndBlock + mIconSize / 2 + mStrokeWidthFrame / 2;
+        mCurTextSize = mTextSize * mParentScale;
         initPaint();
         initTextPaint();
+
+//        Log.d("SimpleLine", "getGeomOptions: "+mWidth+" real = " +mRect.width());
+        geomOptions.x = mRect.width() + 2 * mTranslation.x;
+        geomOptions.y = mRect.height() + 2 * mTranslation.y;
     }
 
-    private void initGeom(float w, float h) {
-        mParentScale = ((FlowChartViewGroup) getParent()).getCurrentScale();
-        Log.d("ScaleParent", "parent scale = " + mParentScale);
-        mRect = new RectF(0, 0,
-                mWidth * RECT_SIZE_COEF * mParentScale, mHeight * RECT_SIZE_COEF * mParentScale);
-        mCurStrokeWidth = mStrokeWidth * mParentScale;
-        mTranslation = new PointF((w - mRect.right) / 2, (h - mRect.bottom) / 2);
-        PointF widthBetweenIconAndBlock = new PointF(mTranslation.x / 2 - mStrokeWidthFrame / 2,
-                mTranslation.y / 2 - mStrokeWidthFrame / 2);
-        mFrameRect = new RectF(mRect.left - widthBetweenIconAndBlock.x, mRect.top - widthBetweenIconAndBlock.y,
-                mRect.right + widthBetweenIconAndBlock.x, mRect.bottom + widthBetweenIconAndBlock.y);
-        mDeleteIconRect = new RectF(-mTranslation.x + mStrokeWidthFrame / 2, -mTranslation.y + mStrokeWidthFrame / 2,
-                -mTranslation.x + mStrokeWidthFrame / 2 + mIconSize, -mTranslation.y + mStrokeWidthFrame / 2 + mIconSize);
-        mResizeIconRect = new RectF(w - mTranslation.x - mStrokeWidthFrame / 2 - mIconSize, h - mTranslation.y - mStrokeWidthFrame / 2 - mIconSize,
-                w - mTranslation.x - mStrokeWidthFrame / 2, h - mTranslation.y - mStrokeWidthFrame / 2);
-
-        mCurTextSize = mTextSize * mParentScale;
-    }
-
-    public PointF getParams() {
-        mParentScale = ((FlowChartViewGroup) getParent()).getCurrentScale();
-        mRect = new RectF(0, 0,
-                mWidth * RECT_SIZE_COEF * mParentScale, mHeight * RECT_SIZE_COEF * mParentScale);
-        return new PointF(mRect.width(), mRect.height());
+    public PointF getGeomOptions() {
+        return geomOptions;
     }
 
     private void initGestureDetector() {
@@ -185,9 +255,23 @@ public abstract class SimpleBlockView extends View {
                             if (isInRect(mDeleteIconRect, e.getX(), e.getY())) {
                                 deleteSelf();
                                 return true;
+                            } else if (isInRect(mAddLineIconRectBottom, e.getX(), e.getY())) {
+                                ((FlowChartViewGroup) getParent()).getLineManager().addBlock(SimpleBlockView.this,
+                                        SimpleLine.BlockSide.BOTTOM);
+                                return true;
+                            } else if (isInRect(mAddLineIconRectTop, e.getX(), e.getY())) {
+                                ((FlowChartViewGroup) getParent()).getLineManager().addBlock(SimpleBlockView.this,
+                                        SimpleLine.BlockSide.TOP);
+                                return true;
+                            } else if (isInRect(mAddLineIconRectRight, e.getX(), e.getY())) {
+                                ((FlowChartViewGroup) getParent()).getLineManager().addBlock(SimpleBlockView.this,
+                                        SimpleLine.BlockSide.RIGHT);
+                                return true;
+                            } else if (isInRect(mAddLineIconRectLeft, e.getX(), e.getY())) {
+                                ((FlowChartViewGroup) getParent()).getLineManager().addBlock(SimpleBlockView.this,
+                                        SimpleLine.BlockSide.LEFT);
+                                return true;
                             }
-
-
                         }
                         setIsSelected(!mIsSelected);
                         if (mIsSelected) {
@@ -206,7 +290,11 @@ public abstract class SimpleBlockView extends View {
                             if (isInRect(mResizeIconRect, e.getX(), e.getY())) {
                                 mBlockMode = BlockMode.RESIZE;
                                 ((FlowChartViewGroup) getParent()).setMode(FlowChartViewGroup.ViewGroupMode.CHILD_IN_ACTION);
-                            } else if (!isInRect(mDeleteIconRect, e.getX(), e.getY())) {
+                            } else if (!isInRect(mDeleteIconRect, e.getX(), e.getY()) &&
+                                    !isInRect(mAddLineIconRectBottom, e.getX(), e.getY()) &&
+                                    !isInRect(mAddLineIconRectTop, e.getX(), e.getY()) &&
+                                    !isInRect(mAddLineIconRectLeft, e.getX(), e.getY()) &&
+                                    !isInRect(mAddLineIconRectRight, e.getX(), e.getY())) {
                                 mBlockMode = BlockMode.MOVING;
                                 ((FlowChartViewGroup) getParent()).setMode(FlowChartViewGroup.ViewGroupMode.CHILD_IN_ACTION);
                             }
@@ -226,7 +314,7 @@ public abstract class SimpleBlockView extends View {
                             translate((e1.getX() - e2.getX()) / scale, (e1.getY() - e2.getY()) / scale);
                             requestLayout();
                         } else if (mBlockMode == BlockMode.RESIZE) {
-                            resizeRect(distanceX, distanceY);
+                            resizeRect(distanceX / scale, distanceY / scale);
                             requestLayout();
                         }
                         return true;
@@ -385,19 +473,19 @@ public abstract class SimpleBlockView extends View {
         }
     }
 
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
         int widthMeasured = (int) (mWidth * RECT_SIZE_COEF + mStrokeWidth + mStrokeWidthFrame + mIconSize);
         int heightMeasured = (int) (mHeight * RECT_SIZE_COEF + mStrokeWidth + mStrokeWidthFrame + mIconSize);
-
         setMeasuredDimension(resolveSize(widthMeasured, widthMeasureSpec),
                 resolveSize(heightMeasured, heightMeasureSpec));
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        reSize(w, h);
+//        reSize(w, h);
         super.onSizeChanged(w, h, oldw, oldh);
     }
 
@@ -406,6 +494,10 @@ public abstract class SimpleBlockView extends View {
         canvas.drawRect(mFrameRect, mFramePaint);
         drawIcon(canvas, mDeleteIcon, mDeleteIconRect);
         drawIcon(canvas, mResizeIcon, mResizeIconRect);
+        drawIcon(canvas, mAddLineIcon, mAddLineIconRectLeft);
+        drawIcon(canvas, mAddLineIcon, mAddLineIconRectTop);
+        drawIcon(canvas, mAddLineIcon, mAddLineIconRectRight);
+        drawIcon(canvas, mAddLineIcon, mAddLineIconRectBottom);
     }
 
     public void drawUnSelected(Canvas canvas) {
@@ -415,6 +507,9 @@ public abstract class SimpleBlockView extends View {
             mCurText.delete(0, 1);
             mCurText.delete(mCurText.length() - 1, mCurText.length());
             textWidth = mTextPaint.measureText(mCurText.toString());
+        }
+        if (mCurText.length() == 1 && mTextPaint.measureText(mCurText.toString()) < mRect.width()) {
+            return;
         }
         if ((mTextPaint.getTextSize()) > mRect.height()) {
             return;
@@ -450,16 +545,17 @@ public abstract class SimpleBlockView extends View {
     }
 
 
-
-//    public abstract boolean isInBlock(float x, float y);
-    public void setIsSelected(boolean isSelected){
+    public void setIsSelected(boolean isSelected) {
         mIsSelected = isSelected;
         if (!isSelected) {
             mBlockMode = BlockMode.FREE;
             invalidate();
+        } else {
+            getParent().bringChildToFront(this);
         }
     }
-    public boolean isSelected(){
+
+    public boolean isSelected() {
         return mIsSelected;
     }
 

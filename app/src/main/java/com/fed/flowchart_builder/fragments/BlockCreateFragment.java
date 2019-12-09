@@ -11,11 +11,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.fed.flowchart_builder.FlowChartViewGroup;
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.adapters.BlocksAdapter;
-import com.fed.flowchart_builder.blocks.SimpleBlockView;
 import com.fed.flowchart_builder.data.BlockDescription;
+import com.fed.flowchart_builder.flowChartViews.FlowChartViewGroup;
+import com.fed.flowchart_builder.flowChartViews.blocks.SimpleBlockView;
 
 public class BlockCreateFragment extends Fragment {
 

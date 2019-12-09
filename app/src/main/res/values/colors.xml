@@ -10,6 +10,8 @@
     <color name="color_background">#FFFFFF</color>
     <color name="color_block_create_background">#EEEBEB</color>
 
+    <color name="color_stroke_default_line">@color/black</color>
+
     <color name="black">#000000</color>
     <color name="red">#F44336</color>
     <color name="green">#4CAF50</color>

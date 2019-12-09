@@ -6,9 +6,9 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 
 import com.fed.flowchart_builder.R;
-import com.fed.flowchart_builder.blocks.ConditionBlockView;
-import com.fed.flowchart_builder.blocks.OperationBlockView;
-import com.fed.flowchart_builder.blocks.SimpleBlockView;
+import com.fed.flowchart_builder.flowChartViews.blocks.ConditionBlockView;
+import com.fed.flowchart_builder.flowChartViews.blocks.OperationBlockView;
+import com.fed.flowchart_builder.flowChartViews.blocks.SimpleBlockView;
 
 public enum BlockDescription {
     OPERATION_BLOCK(R.string.block_operation, R.mipmap.ic_launcher, new ObjectCreator() {
