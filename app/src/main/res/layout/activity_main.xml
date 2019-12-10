@@ -43,7 +43,7 @@
                 android:layout_height="wrap_content"
                 app:color_stroke="@color/dark_blue"
                 app:height="100dp"
-                app:width="20dp"
+                app:width="50dp"
                 app:x="300"
                 app:y="1500" />
         </com.fed.flowchart_builder.flowChartViews.FlowChartViewGroup>

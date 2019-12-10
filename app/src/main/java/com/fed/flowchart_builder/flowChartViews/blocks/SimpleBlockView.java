@@ -57,6 +57,12 @@ public abstract class SimpleBlockView extends View {
     //    private float mTextStrokeWidth;
     private int mTextColor;
     private float mIconSize;
+
+
+    public float getStrokeWidth() {
+        return mStrokeWidth;
+    }
+
     private float mDistanceBetweenIconAndRound;
     private PointF mTranslation;
     private String mText;
@@ -125,6 +131,8 @@ public abstract class SimpleBlockView extends View {
     }
 
     private void init(@NonNull Context context, @Nullable AttributeSet attrs){
+        setSaveEnabled(true);
+
         extractAttributes(context,attrs);
         mCurTextSize = mTextSize;
         initPaint();
@@ -584,4 +592,98 @@ public abstract class SimpleBlockView extends View {
         MOVING,
         RESIZE;
     }
+//
+//    @Override
+//    public Parcelable onSaveInstanceState() {
+//        Log.d(TAG, "SAVE "+mText);
+//        Parcelable superState = super.onSaveInstanceState();
+//        SavedState ss = new SavedState(superState);
+//        ss.mColorStroke = mColorStroke;
+//        ss.mWidth = mWidth;
+//        ss.mHeight = mHeight;
+//        ss.mStrokeWidth = mStrokeWidth;
+//        ss.mTextColor = mTextColor;
+//        ss.mPositionX = mPosition.x;
+//        ss.mPositionY = mPosition.y;
+//        ss.mText = mText;
+//        ss.mTextSize = mTextSize;
+//        return ss;
+//    }
+//
+//    @Override
+//    public void onRestoreInstanceState(Parcelable state) {
+//        Log.d(TAG, "RESTORE " +mText);
+//        SavedState ss = (SavedState) state;
+//        super.onRestoreInstanceState(ss.getSuperState());
+//        mWidth=ss.mWidth;
+//        mHeight=ss.mHeight;
+//        mStrokeWidth=ss.mStrokeWidth;
+//
+//        mColorStroke = ss.mColorStroke;
+//        mWidth = ss.mWidth;
+//        mHeight = ss.mHeight;
+//        mStrokeWidth = ss.mStrokeWidth;
+//        ss.mTextColor = ss.mTextColor;
+//        mPosition.x = ss.mPositionX;
+//        mPosition.y = ss.mPositionY;
+//        mText = ss.mText;
+//        mTextSize = ss.mTextSize;
+//    }
+//
+//    static class SavedState extends BaseSavedState {
+//        int mColorStroke;
+//        float mWidth;
+//        float mHeight;
+//        float mStrokeWidth;
+//        int mTextColor;
+//        int mPositionX;
+//        int mPositionY;
+//        String mText;
+//        float mTextSize;
+//
+//
+//        SavedState(Parcelable superState) {
+//            super(superState);
+//        }
+//
+//        private SavedState(Parcel in) {
+//            super(in);
+//            mColorStroke = in.readInt();
+//            mTextColor = in.readInt();
+//            mPositionX = in.readInt();
+//            mPositionY = in.readInt();
+//            mWidth = in.readFloat();
+//            mHeight = in.readFloat();
+//            mStrokeWidth = in.readFloat();
+//            mTextSize = in.readFloat();
+//            mText=in.readString();
+//        }
+//
+//        @Override
+//        public void writeToParcel(Parcel out,  int flags) {
+//            super.writeToParcel(out,  flags);
+//            out.writeInt(mColorStroke);
+//            out.writeInt(mTextColor);
+//            out.writeInt(mPositionX);
+//            out.writeInt(mPositionY);
+//            out.writeFloat(mWidth);
+//            out.writeFloat(mHeight);
+//            out.writeFloat(mStrokeWidth);
+//            out.writeFloat(mTextSize);
+//            out.writeString(mText);
+//        }
+//
+//        public static final Parcelable.Creator<SavedState> CREATOR
+//                = new Parcelable.Creator<SavedState>() {
+//            public SavedState createFromParcel(Parcel in) {
+//                return new SavedState(in);
+//            }
+//
+//            public SavedState[] newArray(int size) {
+//                return new SavedState[size];
+//            }
+//        };
+//    }
+
+
 }

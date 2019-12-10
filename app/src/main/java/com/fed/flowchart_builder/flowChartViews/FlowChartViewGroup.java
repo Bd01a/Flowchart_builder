@@ -54,12 +54,14 @@ public class FlowChartViewGroup extends ViewGroup {
         init();
     }
 
-    private void init(){
+    private void init() {
+        setSaveEnabled(true);
         initGestureDetector();
         initScaleGestureDetector();
 
         mLineManager = new LineManager(getContext(), this);
     }
+
 
     public LineManager getLineManager() {
         return mLineManager;
@@ -67,7 +69,7 @@ public class FlowChartViewGroup extends ViewGroup {
 
     private void initScaleGestureDetector() {
         ScaleGestureDetector.SimpleOnScaleGestureListener simpleOnScaleGestureListener =
-                new ScaleGestureDetector.SimpleOnScaleGestureListener(){
+                new ScaleGestureDetector.SimpleOnScaleGestureListener() {
                     @Override
                     public boolean onScale(ScaleGestureDetector detector) {
 
@@ -128,7 +130,7 @@ public class FlowChartViewGroup extends ViewGroup {
                 if (!mScroller.isFinished()) mScroller.abortAnimation();
                 mDownPosition = new PointF(ev.getX(), ev.getY());
                 mIsScrolling = false;
-                mIsFirstScroll=true;
+                mIsFirstScroll = true;
                 break;
             case MotionEvent.ACTION_MOVE: {
 
@@ -148,32 +150,32 @@ public class FlowChartViewGroup extends ViewGroup {
     }
 
     private float calculateDistance(MotionEvent ev) {
-        return (float)Math.sqrt(Math.pow(mDownPosition.x-ev.getX(), 2)+Math.pow(mDownPosition.y-ev.getY(),2));
+        return (float) Math.sqrt(Math.pow(mDownPosition.x - ev.getX(), 2) + Math.pow(mDownPosition.y - ev.getY(), 2));
     }
 
     private void initGestureDetector() {
 
         mScroller = new Scroller(getContext());
         GestureDetector.SimpleOnGestureListener simpleOnGestureListener =
-                new GestureDetector.SimpleOnGestureListener(){
+                new GestureDetector.SimpleOnGestureListener() {
                     @Override
                     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-                        if(mIsFirstScroll){
+                        if (mIsFirstScroll) {
                             mIsFirstScroll = false;
-                            distanceX = -e2.getX()+mDownPosition.x;
-                            distanceY = -e2.getY()+mDownPosition.y;
+                            distanceX = -e2.getX() + mDownPosition.x;
+                            distanceY = -e2.getY() + mDownPosition.y;
 
                         }
-                            scrollBy((int) distanceX, (int) distanceY);
+                        scrollBy((int) distanceX, (int) distanceY);
                         return true;
                     }
 
                     @Override
                     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                        mScroller.fling(getScrollX(), getScrollY(), -(int)velocityX, -(int)velocityY,
+                        mScroller.fling(getScrollX(), getScrollY(), -(int) velocityX, -(int) velocityY,
                                 mBorderViewGroup.left, mBorderViewGroup.right,
                                 mBorderViewGroup.top, mBorderViewGroup.bottom
-                                );
+                        );
 
                         return true;
                     }
@@ -184,14 +186,13 @@ public class FlowChartViewGroup extends ViewGroup {
 
     @Override
     public void computeScroll() {
-        if(mScroller.computeScrollOffset()){
+        if (mScroller.computeScrollOffset()) {
             int oldX = getScrollX();
             int oldY = getScrollY();
             int x = mScroller.getCurrX();
             int y = mScroller.getCurrY();
             scrollTo(x, y);
-            if (oldX != getScrollX() || oldY != getScrollY())
-            {
+            if (oldX != getScrollX() || oldY != getScrollY()) {
                 onScrollChanged(getScrollX(), getScrollY(), oldX, oldY);
             }
             postInvalidate();
@@ -200,14 +201,14 @@ public class FlowChartViewGroup extends ViewGroup {
     }
 
 
-
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         mLineManager.update();
         for (int i = 0; i < getChildCount(); i++) {
+
             final View child = getChildAt(i);
-            if(child instanceof SimpleBlockView) {
-                final SimpleBlockView simpleBlockView = (SimpleBlockView)child;
+            if (child instanceof SimpleBlockView) {
+                final SimpleBlockView simpleBlockView = (SimpleBlockView) child;
                 simpleBlockView.updateGeomOptions();
                 int positionX = (int) (mCurrentScale * (simpleBlockView.getPosition().x));
                 int positionY = (int) (mCurrentScale * (simpleBlockView.getPosition().y));
@@ -241,17 +242,106 @@ public class FlowChartViewGroup extends ViewGroup {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         for (int i = 0; i < getChildCount(); i++) {
+
+
             final View child = getChildAt(i);
             if (child.getVisibility() != View.GONE) {
-                measureChild(child, widthMeasureSpec,  heightMeasureSpec);
+                measureChild(child, widthMeasureSpec, heightMeasureSpec);
             }
         }
-        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec),MeasureSpec.getSize(heightMeasureSpec));
+        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(heightMeasureSpec));
     }
+
 
     public enum ViewGroupMode {
         FREE,
         CHILD_IN_ACTION;
     }
+
+//
+//    @Override
+//    public Parcelable onSaveInstanceState() {
+//        Parcelable superState = super.onSaveInstanceState();
+//        SavedState ss = new SavedState(superState);
+//        ss.childrenStates = new SparseArray();
+//        ss.widthes = new ArrayList<>();
+//        ss.heightes = new ArrayList<>();
+//
+//        Log.d(TAG, "save " + getChildCount());
+//        for (int i = 0; i < getChildCount(); i++) {
+//            Log.d(TAG, "" + getChildAt(i).isSaveEnabled());
+//            if (getChildAt(i) instanceof SimpleBlockView) {
+//
+//                ss.widthes.add(((SimpleBlockView) getChildAt(i)).getOriginalWidth());
+//                ss.widthes.add(((SimpleBlockView) getChildAt(i)).getOriginalHeight());
+//            }
+//            getChildAt(i).saveHierarchyState(ss.childrenStates);
+//        }
+//        return ss;
+//    }
+//
+//    @Override
+//    public void onRestoreInstanceState(Parcelable state) {
+//        SavedState ss = (SavedState) state;
+//        super.onRestoreInstanceState(ss.getSuperState());
+//        Log.d(TAG, "restore " + getChildCount());
+//        for (int i = 0; i < getChildCount(); i++) {
+//            getChildAt(i).restoreHierarchyState(ss.childrenStates);
+//        }
+//    }
+//
+//    @Override
+//    protected void dispatchSaveInstanceState(SparseArray<Parcelable> container) {
+//        dispatchFreezeSelfOnly(container);
+//    }
+//
+//    @Override
+//    protected void dispatchRestoreInstanceState(SparseArray<Parcelable> container) {
+//        dispatchThawSelfOnly(container);
+//    }
+//
+//    static class SavedState extends BaseSavedState {
+//        SparseArray childrenStates;
+//
+//        List<Float> widthes;
+//        List<Float> heightes;
+//
+//        SavedState(Parcelable superState) {
+//            super(superState);
+//        }
+//
+//        private SavedState(Parcel in, ClassLoader classLoader) {
+//            super(in);
+//            widthes = in.readArrayList(getClass().getClassLoader());
+//            heightes = in.readArrayList(getClass().getClassLoader());
+////            childrenStates = in.readSparseArray(classLoader);
+//        }
+//
+//        @Override
+//        public void writeToParcel(Parcel out, int flags) {
+//            super.writeToParcel(out, flags);
+//            out.writeList(widthes);
+//            out.writeList(heightes);
+////            out.writeSparseArray(childrenStates);
+//        }
+//
+//        public static final ClassLoaderCreator<SavedState> CREATOR
+//                = new ClassLoaderCreator<SavedState>() {
+//            @Override
+//            public SavedState createFromParcel(Parcel source, ClassLoader loader) {
+//                return new SavedState(source, loader);
+//            }
+//
+//            @Override
+//            public SavedState createFromParcel(Parcel source) {
+//                return createFromParcel(source, null);
+//            }
+//
+//            public SavedState[] newArray(int size) {
+//                return new SavedState[size];
+//            }
+//        };
+//    }
+
 
 }

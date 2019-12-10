@@ -20,10 +20,6 @@ public class OperationBlockView extends SimpleBlockView {
         super(context, attrs, defStyleAttr);
     }
 
-//    @Override
-//    public void drawSelected(Canvas canvas) {
-//        canvas.drawOval(getRect(), getPaint());
-//    }
 
     @Override
     public void drawUnSelected(Canvas canvas) {
@@ -32,12 +28,5 @@ public class OperationBlockView extends SimpleBlockView {
 
     }
 
-//    @Override
-//    public boolean isInBlock(float x, float y) {
-//        if((x<getRect().right) &&  (x>getRect().left) && (y<getRect().bottom) && (y>getRect().top)){
-//            return true;
-//        }
-//        return false;
-//    }
 
 }

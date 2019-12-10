@@ -17,7 +17,7 @@
     <dimen name="padding_block_settings">8dp</dimen>
     <dimen name="distance_block_line">16dp</dimen>
 
-    <dimen name="stroke_width_default_line">4dp</dimen>
+    <dimen name="stroke_width_default_line">2dp</dimen>
     <dimen name="margin_floating_button_charts">12dp</dimen>
     <dimen name="corner_radius_card_chart_item">4dp</dimen>
     <dimen name="content_padding_card_chart_item">8dp</dimen>

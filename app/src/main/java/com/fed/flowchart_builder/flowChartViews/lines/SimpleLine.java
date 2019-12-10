@@ -5,7 +5,10 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -23,10 +26,8 @@ import java.util.List;
 public class SimpleLine extends View {
 
     private static final String TAG = "SimpleLine";
-    private static final int DIRECTION_LEFT = 1;
-    private static final int DIRECTION_RIGHT = 2;
-    private static final int DIRECTION_TOP = 3;
-    private static final int DIRECTION_BOTTOM = 4;
+    private static final float ARROW_COEF_ALONG = 0.7f;
+    private static final float ARROW_COEF_ACROSS = 0.4f;
 
     private Paint mPaint;
     private List<PointF> mPoints;
@@ -47,6 +48,12 @@ public class SimpleLine extends View {
     private SimpleBlockView mBlock2;
     private BlockSide mSide2;
 
+    private Path mArrowPath = new Path();
+
+    private boolean mIsDrawDeleteIcon;
+    private Drawable mDeleteIcon;
+    private RectF mDeleteIconRect = new RectF();
+
     public SimpleLine(Context context) {
         super(context);
         init(context, null);
@@ -60,6 +67,10 @@ public class SimpleLine extends View {
     public SimpleLine(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
+    }
+
+    public void isDrawDeleteIcon(boolean isDrawDeleteIcon) {
+        mIsDrawDeleteIcon = isDrawDeleteIcon;
     }
 
     public float getLineWidth() {
@@ -83,6 +94,7 @@ public class SimpleLine extends View {
         mPoints = new ArrayList<>();
         mCurStrokeWidth = mStrokeWidth;
         mDistanceBlockLine = getResources().getDimension(R.dimen.distance_block_line);
+        mDeleteIcon = getResources().getDrawable(R.drawable.ic_delete_blue_24dp);
         initPaint();
     }
 
@@ -716,12 +728,14 @@ public class SimpleLine extends View {
             } else if (leftX1 > rightX2) {
                 nextStart.x = rightX2 + (leftX1 - rightX2) / 2;
                 nextEnd.x = nextStart.x;
-            } else if (rightX1 > rightX2) {
-                nextStart.x = rightX1;
-                nextEnd.x = nextStart.x;
-            } else if (leftX1 < leftX2) {
-                nextStart.x = leftX1;
-                nextEnd.x = nextStart.x;
+            } else {
+                if (start.x > end.x) {
+                    nextStart.x = Math.max(rightX1, rightX2);
+                    nextEnd.x = nextStart.x;
+                } else {
+                    nextStart.x = Math.min(leftX1, leftX2);
+                    nextEnd.x = nextStart.x;
+                }
             }
         } else {
             nextStart.y = bottomY1 + (topY2 - bottomY1) / 2;
@@ -779,8 +793,8 @@ public class SimpleLine extends View {
     }
 
     private PointF determineStartPoint(SimpleBlockView blockView, BlockSide side) {
-        float width = blockView.getRect().width();
-        float height = blockView.getRect().height();
+        float width = blockView.getOriginalWidth();
+        float height = blockView.getOriginalHeight();
 
         PointF point = new PointF();
 
@@ -830,6 +844,63 @@ public class SimpleLine extends View {
         for (int i = 1; i < mPoints.size(); i++) {
             canvas.drawLine((mPoints.get(i - 1).x) * scale, (mPoints.get(i - 1).y) * scale,
                     (mPoints.get(i).x) * scale, (mPoints.get(i).y) * scale, mPaint);
+            if (i != mPoints.size() - 1) {
+                if (mPoints.get(i - 1).y == mPoints.get(i).y) {
+                    canvas.drawLine((mPoints.get(i).x - mStrokeWidth / 2) * scale, (mPoints.get(i).y) * scale,
+                            (mPoints.get(i).x) * scale, (mPoints.get(i).y) * scale, mPaint);
+                    canvas.drawLine((mPoints.get(i).x) * scale, (mPoints.get(i).y) * scale,
+                            (mPoints.get(i).x + mStrokeWidth / 2) * scale, (mPoints.get(i).y) * scale, mPaint);
+
+                } else {
+                    canvas.drawLine((mPoints.get(i).x) * scale, (mPoints.get(i).y - mStrokeWidth / 2) * scale,
+                            (mPoints.get(i).x) * scale, (mPoints.get(i).y) * scale, mPaint);
+                    canvas.drawLine((mPoints.get(i).x) * scale, (mPoints.get(i).y) * scale,
+                            (mPoints.get(i).x) * scale, (mPoints.get(i).y + mStrokeWidth / 2) * scale, mPaint);
+
+                }
+            } else if (i == mPoints.size() - 1) {
+                mArrowPath.reset();
+                if (mPoints.get(i - 1).y == mPoints.get(i).y) {
+                    if (mPoints.get(i - 1).x < mPoints.get(i).x) {
+                        float center = (mPoints.get(i).x - mBlock2.getStrokeWidth() / 2) * scale;
+                        mArrowPath.moveTo(center - mDistanceBlockLine * ARROW_COEF_ALONG * scale,
+                                (mPoints.get(i).y - mDistanceBlockLine * ARROW_COEF_ACROSS) * scale);
+                        mArrowPath.lineTo(center, (mPoints.get(i).y) * scale);
+                        mArrowPath.lineTo(center - mDistanceBlockLine * ARROW_COEF_ALONG * scale,
+                                (mPoints.get(i).y + mDistanceBlockLine * ARROW_COEF_ACROSS) * scale);
+                        canvas.drawPath(mArrowPath, mPaint);
+                    } else {
+                        float center = (mPoints.get(i).x + mBlock2.getStrokeWidth() / 2) * scale;
+                        mArrowPath.moveTo(center + mDistanceBlockLine * ARROW_COEF_ALONG * scale,
+                                (mPoints.get(i).y - mDistanceBlockLine * ARROW_COEF_ACROSS) * scale);
+                        mArrowPath.lineTo(center, (mPoints.get(i).y) * scale);
+                        mArrowPath.lineTo(center + mDistanceBlockLine * ARROW_COEF_ALONG * scale,
+                                (mPoints.get(i).y + mDistanceBlockLine * ARROW_COEF_ACROSS) * scale);
+                        canvas.drawPath(mArrowPath, mPaint);
+
+                    }
+
+                } else {
+                    if (mPoints.get(i - 1).y < mPoints.get(i).y) {
+                        float center = (mPoints.get(i).y - mBlock2.getStrokeWidth() / 2) * scale;
+                        mArrowPath.moveTo((mPoints.get(i).x - mDistanceBlockLine * ARROW_COEF_ACROSS) * scale,
+                                center - mDistanceBlockLine * ARROW_COEF_ALONG * scale);
+                        mArrowPath.lineTo((mPoints.get(i).x) * scale, center);
+                        mArrowPath.lineTo((mPoints.get(i).x + mDistanceBlockLine * ARROW_COEF_ACROSS) * scale,
+                                center - mDistanceBlockLine * ARROW_COEF_ALONG * scale);
+                        canvas.drawPath(mArrowPath, mPaint);
+                    } else {
+                        float center = (mPoints.get(i).y + mBlock2.getStrokeWidth() / 2) * scale;
+                        mArrowPath.moveTo((mPoints.get(i).x - mDistanceBlockLine * ARROW_COEF_ACROSS) * scale,
+                                center + mDistanceBlockLine * ARROW_COEF_ALONG * scale);
+                        mArrowPath.lineTo((mPoints.get(i).x) * scale, center);
+                        mArrowPath.lineTo((mPoints.get(i).x + mDistanceBlockLine * ARROW_COEF_ACROSS) * scale,
+                                center + mDistanceBlockLine * ARROW_COEF_ALONG * scale);
+                        canvas.drawPath(mArrowPath, mPaint);
+                    }
+
+                }
+            }
         }
 
     }
@@ -854,10 +925,10 @@ public class SimpleLine extends View {
                 tY = mPoints.get(i).y;
             }
         }
-        mWidth = rX - lX + mStrokeWidth;
-        mHeight = bY - tY + mStrokeWidth;
-        mX = lX;
-        mY = tY;
+        mWidth = rX - lX + mStrokeWidth + mDistanceBlockLine;
+        mHeight = bY - tY + mStrokeWidth + mDistanceBlockLine;
+        mX = lX - mDistanceBlockLine / 2;
+        mY = tY - mDistanceBlockLine / 2;
     }
 
     public void update() {
