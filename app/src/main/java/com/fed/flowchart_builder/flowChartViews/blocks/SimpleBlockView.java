@@ -12,7 +12,6 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -27,12 +26,13 @@ import androidx.appcompat.app.AlertDialog;
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.adapters.ColorArrayAdapter;
 import com.fed.flowchart_builder.flowChartViews.FlowChartViewGroup;
+import com.fed.flowchart_builder.flowChartViews.SavedStateChild;
 import com.fed.flowchart_builder.flowChartViews.lines.SimpleLine;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class SimpleBlockView extends View {
+public abstract class SimpleBlockView extends View implements SavedStateChild {
     private static final String TAG = "SimpleBlockViewTAG";
 
     private static final float RECT_SIZE_COEF = 1f;
@@ -58,11 +58,6 @@ public abstract class SimpleBlockView extends View {
     private int mTextColor;
     private float mIconSize;
 
-
-    public float getStrokeWidth() {
-        return mStrokeWidth;
-    }
-
     private float mDistanceBetweenIconAndRound;
     private PointF mTranslation;
     private String mText;
@@ -70,7 +65,6 @@ public abstract class SimpleBlockView extends View {
     private float mTextSize;
     private float mCurTextSize;
 
-    private int mColorStrokeFrame;
     private float mStrokeWidthFrame;
     private Point mPosition = new Point();
     private float mParentScale;
@@ -82,6 +76,7 @@ public abstract class SimpleBlockView extends View {
     private Drawable mResizeIcon;
     private RectF mResizeIconRect = new RectF();
     private Drawable mAddLineIcon;
+    private boolean mIsShowAddIcons;
     private RectF mAddLineIconRectLeft = new RectF();
     private RectF mAddLineIconRectTop = new RectF();
     private RectF mAddLineIconRectRight = new RectF();
@@ -89,6 +84,7 @@ public abstract class SimpleBlockView extends View {
     private BlockMode mBlockMode = BlockMode.FREE;
 
     private PointF geomOptions = new PointF(0, 0);
+
 
     public SimpleBlockView(Context context) {
         super(context);
@@ -108,7 +104,6 @@ public abstract class SimpleBlockView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         boolean retVal = mGestureDetector.onTouchEvent(event);
-        Log.d("resize", "touch event " + mBlockMode.toString());
         if (event.getAction() == MotionEvent.ACTION_CANCEL || event.getAction() == MotionEvent.ACTION_UP) {
             if (mBlockMode != BlockMode.FREE) {
                 mBlockMode = BlockMode.FREE;
@@ -116,6 +111,10 @@ public abstract class SimpleBlockView extends View {
             }
         }
         return retVal ;
+    }
+
+    public float getStrokeWidth() {
+        return mStrokeWidth;
     }
 
     public Point getPosition(){
@@ -131,7 +130,6 @@ public abstract class SimpleBlockView extends View {
     }
 
     private void init(@NonNull Context context, @Nullable AttributeSet attrs){
-        setSaveEnabled(true);
 
         extractAttributes(context,attrs);
         mCurTextSize = mTextSize;
@@ -159,31 +157,6 @@ public abstract class SimpleBlockView extends View {
         mHeight = mHeight > MAX_SIZE ? MAX_SIZE : mHeight;
     }
 
-//
-//    public void reSize(float w, float h) {
-//        initGeom(w, h);
-//        initPaint();
-//        initTextPaint();
-//    }
-
-    //    private void initGeom(float w, float h) {
-//        mParentScale = ((FlowChartViewGroup) getParent()).getCurrentScale();
-//        Log.d("ScaleParent", "parent scale = " + mParentScale);
-//        mRect = new RectF(0, 0,
-//                mWidth * RECT_SIZE_COEF * mParentScale, mHeight * RECT_SIZE_COEF * mParentScale);
-//        mCurStrokeWidth = mStrokeWidth * mParentScale;
-//        mTranslation = new PointF((w - mRect.right) / 2, (h - mRect.bottom) / 2);
-//        PointF widthBetweenIconAndBlock = new PointF(mTranslation.x / 2 - mStrokeWidthFrame / 2,
-//                mTranslation.y / 2 - mStrokeWidthFrame / 2);
-//        mFrameRect = new RectF(mRect.left - widthBetweenIconAndBlock.x, mRect.top - widthBetweenIconAndBlock.y,
-//                mRect.right + widthBetweenIconAndBlock.x, mRect.bottom + widthBetweenIconAndBlock.y);
-//        mDeleteIconRect = new RectF(-mTranslation.x + mStrokeWidthFrame / 2, -mTranslation.y + mStrokeWidthFrame / 2,
-//                -mTranslation.x + mStrokeWidthFrame / 2 + mIconSize, -mTranslation.y + mStrokeWidthFrame / 2 + mIconSize);
-//        mResizeIconRect = new RectF(w - mTranslation.x - mStrokeWidthFrame / 2 - mIconSize, h - mTranslation.y - mStrokeWidthFrame / 2 - mIconSize,
-//                w - mTranslation.x - mStrokeWidthFrame / 2, h - mTranslation.y - mStrokeWidthFrame / 2);
-//
-//        mCurTextSize = mTextSize * mParentScale;
-//    }
     public float getOriginalWidth() {
         return mWidth;
     }
@@ -238,13 +211,12 @@ public abstract class SimpleBlockView extends View {
         mAddLineIconRectRight.right = mFrameRect.right + mIconSize / 2;
         mAddLineIconRectRight.bottom = mFrameRect.top + mFrameRect.height() / 2 + mIconSize / 2;
 
-        mTranslation.x = widthBeetwenFrameAndBlock + mIconSize / 2 + mStrokeWidthFrame / 2;
-        mTranslation.y = widthBeetwenFrameAndBlock + mIconSize / 2 + mStrokeWidthFrame / 2;
+        mTranslation.x = widthBeetwenFrameAndBlock + mIconSize / 2 + mStrokeWidthFrame;
+        mTranslation.y = widthBeetwenFrameAndBlock + mIconSize / 2 + mStrokeWidthFrame;
         mCurTextSize = mTextSize * mParentScale;
         initPaint();
         initTextPaint();
 
-//        Log.d("SimpleLine", "getGeomOptions: "+mWidth+" real = " +mRect.width());
         geomOptions.x = mRect.width() + 2 * mTranslation.x;
         geomOptions.y = mRect.height() + 2 * mTranslation.y;
     }
@@ -263,7 +235,10 @@ public abstract class SimpleBlockView extends View {
                             if (isInRect(mDeleteIconRect, e.getX(), e.getY())) {
                                 deleteSelf();
                                 return true;
-                            } else if (isInRect(mAddLineIconRectBottom, e.getX(), e.getY())) {
+                            }
+                        }
+                        if (mIsSelected || mIsShowAddIcons) {
+                            if (isInRect(mAddLineIconRectBottom, e.getX(), e.getY())) {
                                 ((FlowChartViewGroup) getParent()).getLineManager().addBlock(SimpleBlockView.this,
                                         SimpleLine.BlockSide.BOTTOM);
                                 return true;
@@ -415,7 +390,9 @@ public abstract class SimpleBlockView extends View {
 
 
     private void deleteSelf() {
-        ((FlowChartViewGroup) getParent()).removeView(this);
+        FlowChartViewGroup viewGroup = (FlowChartViewGroup) getParent();
+        viewGroup.removeView(this);
+        viewGroup.checkLines();
     }
 
     private void initPaint() {
@@ -436,7 +413,7 @@ public abstract class SimpleBlockView extends View {
 
     private void initFramePaints() {
         mStrokeWidthFrame = getResources().getDimension(R.dimen.stroke_width_frame_block);
-        mColorStrokeFrame = getResources().getColor(R.color.color_stroke_frame);
+        int mColorStrokeFrame = getResources().getColor(R.color.color_stroke_frame);
 
         mFramePaint = new Paint();
         mFramePaint.setStyle(Paint.Style.STROKE);
@@ -478,7 +455,13 @@ public abstract class SimpleBlockView extends View {
         drawUnSelected(canvas);
         if (mIsSelected) {
             drawSelected(canvas);
+        } else if (mIsShowAddIcons) {
+            drawAddLineIcons(canvas);
         }
+    }
+
+    public void isAddLineIconsShow(boolean isShow) {
+        mIsShowAddIcons = isShow;
     }
 
 
@@ -502,6 +485,10 @@ public abstract class SimpleBlockView extends View {
         canvas.drawRect(mFrameRect, mFramePaint);
         drawIcon(canvas, mDeleteIcon, mDeleteIconRect);
         drawIcon(canvas, mResizeIcon, mResizeIconRect);
+        drawAddLineIcons(canvas);
+    }
+
+    private void drawAddLineIcons(Canvas canvas) {
         drawIcon(canvas, mAddLineIcon, mAddLineIconRectLeft);
         drawIcon(canvas, mAddLineIcon, mAddLineIconRectTop);
         drawIcon(canvas, mAddLineIcon, mAddLineIconRectRight);
@@ -527,7 +514,6 @@ public abstract class SimpleBlockView extends View {
         canvas.drawText(mCurText.toString(), textX, textY, mTextPaint);
     }
 
-    ;
 
     private void drawIcon(Canvas canvas, Drawable icon, RectF bounds) {
         icon.setBounds((int) (bounds.left + mDistanceBetweenIconAndRound),
@@ -582,108 +568,47 @@ public abstract class SimpleBlockView extends View {
             return false;
         } else if (mStrokeWidth != view.mStrokeWidth || mColorStroke != view.mColorStroke) {
             return false;
+        } else {
+            return true;
         }
-
-        return true;
     }
+
+    public void saveState(FlowChartViewGroup.FlowChartSavedState ss) {
+
+        ss.mColorStroke.add(mColorStroke);
+        ss.mWidth.add(mWidth);
+        ss.mHeight.add(mHeight);
+        ss.mStrokeWidth.add(mStrokeWidth);
+        ss.mTextColor.add(mTextColor);
+        ss.mPositionX.add(mPosition.x);
+        ss.mPositionY.add(mPosition.y);
+        if (this instanceof OperationBlockView) {
+            ss.mBlockType.add(FlowChartViewGroup.FlowChartSavedState.OPERATION_BLOCK);
+        } else if (this instanceof ConditionBlockView) {
+            ss.mBlockType.add(FlowChartViewGroup.FlowChartSavedState.CONDITION_BLOCK);
+        }
+        ss.mText.add(mText);
+        ss.mTextSize.add(mTextSize);
+    }
+
+    public void restoreState(FlowChartViewGroup.FlowChartSavedState ss, int index) {
+        mColorStroke = ss.mColorStroke.get(index);
+        mWidth = ss.mWidth.get(index);
+        mHeight = ss.mHeight.get(index);
+        mStrokeWidth = ss.mStrokeWidth.get(index);
+        mTextColor = ss.mTextColor.get(index);
+        mPosition.x = ss.mPositionX.get(index);
+        mPosition.y = ss.mPositionY.get(index);
+        mText = ss.mText.get(index);
+        mTextSize = ss.mTextSize.get(index);
+    }
+
 
     enum BlockMode {
         FREE,
         MOVING,
-        RESIZE;
+        RESIZE
     }
-//
-//    @Override
-//    public Parcelable onSaveInstanceState() {
-//        Log.d(TAG, "SAVE "+mText);
-//        Parcelable superState = super.onSaveInstanceState();
-//        SavedState ss = new SavedState(superState);
-//        ss.mColorStroke = mColorStroke;
-//        ss.mWidth = mWidth;
-//        ss.mHeight = mHeight;
-//        ss.mStrokeWidth = mStrokeWidth;
-//        ss.mTextColor = mTextColor;
-//        ss.mPositionX = mPosition.x;
-//        ss.mPositionY = mPosition.y;
-//        ss.mText = mText;
-//        ss.mTextSize = mTextSize;
-//        return ss;
-//    }
-//
-//    @Override
-//    public void onRestoreInstanceState(Parcelable state) {
-//        Log.d(TAG, "RESTORE " +mText);
-//        SavedState ss = (SavedState) state;
-//        super.onRestoreInstanceState(ss.getSuperState());
-//        mWidth=ss.mWidth;
-//        mHeight=ss.mHeight;
-//        mStrokeWidth=ss.mStrokeWidth;
-//
-//        mColorStroke = ss.mColorStroke;
-//        mWidth = ss.mWidth;
-//        mHeight = ss.mHeight;
-//        mStrokeWidth = ss.mStrokeWidth;
-//        ss.mTextColor = ss.mTextColor;
-//        mPosition.x = ss.mPositionX;
-//        mPosition.y = ss.mPositionY;
-//        mText = ss.mText;
-//        mTextSize = ss.mTextSize;
-//    }
-//
-//    static class SavedState extends BaseSavedState {
-//        int mColorStroke;
-//        float mWidth;
-//        float mHeight;
-//        float mStrokeWidth;
-//        int mTextColor;
-//        int mPositionX;
-//        int mPositionY;
-//        String mText;
-//        float mTextSize;
-//
-//
-//        SavedState(Parcelable superState) {
-//            super(superState);
-//        }
-//
-//        private SavedState(Parcel in) {
-//            super(in);
-//            mColorStroke = in.readInt();
-//            mTextColor = in.readInt();
-//            mPositionX = in.readInt();
-//            mPositionY = in.readInt();
-//            mWidth = in.readFloat();
-//            mHeight = in.readFloat();
-//            mStrokeWidth = in.readFloat();
-//            mTextSize = in.readFloat();
-//            mText=in.readString();
-//        }
-//
-//        @Override
-//        public void writeToParcel(Parcel out,  int flags) {
-//            super.writeToParcel(out,  flags);
-//            out.writeInt(mColorStroke);
-//            out.writeInt(mTextColor);
-//            out.writeInt(mPositionX);
-//            out.writeInt(mPositionY);
-//            out.writeFloat(mWidth);
-//            out.writeFloat(mHeight);
-//            out.writeFloat(mStrokeWidth);
-//            out.writeFloat(mTextSize);
-//            out.writeString(mText);
-//        }
-//
-//        public static final Parcelable.Creator<SavedState> CREATOR
-//                = new Parcelable.Creator<SavedState>() {
-//            public SavedState createFromParcel(Parcel in) {
-//                return new SavedState(in);
-//            }
-//
-//            public SavedState[] newArray(int size) {
-//                return new SavedState[size];
-//            }
-//        };
-//    }
 
 
 }

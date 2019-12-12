@@ -3,7 +3,10 @@ package com.fed.flowchart_builder.flowChartViews;
 import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -11,9 +14,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Scroller;
 
+import com.fed.flowchart_builder.flowChartViews.blocks.ConditionBlockView;
+import com.fed.flowchart_builder.flowChartViews.blocks.OperationBlockView;
 import com.fed.flowchart_builder.flowChartViews.blocks.SimpleBlockView;
 import com.fed.flowchart_builder.flowChartViews.lines.LineManager;
 import com.fed.flowchart_builder.flowChartViews.lines.SimpleLine;
+
+import java.util.ArrayList;
 
 
 public class FlowChartViewGroup extends ViewGroup {
@@ -62,7 +69,6 @@ public class FlowChartViewGroup extends ViewGroup {
         mLineManager = new LineManager(getContext(), this);
     }
 
-
     public LineManager getLineManager() {
         return mLineManager;
     }
@@ -90,6 +96,16 @@ public class FlowChartViewGroup extends ViewGroup {
         mMode = mode;
     }
 
+    public void showAllAddLineIcons(boolean isShow) {
+        for (int i = 0; i < getChildCount(); i++) {
+            if (getChildAt(i) instanceof SimpleBlockView) {
+                ((SimpleBlockView) getChildAt(i)).isAddLineIconsShow(isShow);
+                getChildAt(i).invalidate();
+            }
+        }
+    }
+
+
     public void selectChild(SimpleBlockView view) {
         if (!view.equals(mCurrentSelectedView) && mCurrentSelectedView != null) {
             mCurrentSelectedView.setIsSelected(false);
@@ -101,12 +117,6 @@ public class FlowChartViewGroup extends ViewGroup {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            final float xDiff = calculateDistance(event);
-            if (xDiff < mTouchSlop) {
-//               mCurrentSelectedView.set
-            }
-        }
 
         boolean retVal = mScaleGestureDetector.onTouchEvent(event);
         retVal = mGestureDetector.onTouchEvent(event) || retVal;
@@ -153,6 +163,7 @@ public class FlowChartViewGroup extends ViewGroup {
         return (float) Math.sqrt(Math.pow(mDownPosition.x - ev.getX(), 2) + Math.pow(mDownPosition.y - ev.getY(), 2));
     }
 
+
     private void initGestureDetector() {
 
         mScroller = new Scroller(getContext());
@@ -171,6 +182,13 @@ public class FlowChartViewGroup extends ViewGroup {
                     }
 
                     @Override
+                    public void onLongPress(MotionEvent e) {
+                        super.onLongPress(e);
+
+                        mLineManager.showDeleteIcons(!mLineManager.isDrawDeleteIcons());
+                    }
+
+                    @Override
                     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
                         mScroller.fling(getScrollX(), getScrollY(), -(int) velocityX, -(int) velocityY,
                                 mBorderViewGroup.left, mBorderViewGroup.right,
@@ -182,6 +200,10 @@ public class FlowChartViewGroup extends ViewGroup {
 
                 };
         mGestureDetector = new GestureDetector(getContext(), simpleOnGestureListener);
+    }
+
+    public void checkLines() {
+        mLineManager.checkBlocks();
     }
 
     @Override
@@ -220,10 +242,10 @@ public class FlowChartViewGroup extends ViewGroup {
                 final int childB = positionY + height / 2;
                 child.layout(childL, childT, childR, childB);
             } else if (child instanceof SimpleLine) {
-                float width = mCurrentScale * ((SimpleLine) child).getLineWidth();
-                float height = mCurrentScale * ((SimpleLine) child).getLineHeight();
-                float positionX = mCurrentScale * ((SimpleLine) child).getLineX();
-                float positionY = mCurrentScale * ((SimpleLine) child).getLineY();
+                float width = ((SimpleLine) child).getLineWidth();
+                float height = ((SimpleLine) child).getLineHeight();
+                float positionX = ((SimpleLine) child).getLineX();
+                float positionY = ((SimpleLine) child).getLineY();
                 final int childL = (int) positionX;
                 final int childT = (int) positionY;
                 final int childR = (int) (positionX + width);
@@ -253,95 +275,184 @@ public class FlowChartViewGroup extends ViewGroup {
     }
 
 
-    public enum ViewGroupMode {
-        FREE,
-        CHILD_IN_ACTION;
+    public int getNumberBlockChild(SimpleBlockView view) {
+        int number = 0;
+        for (int i = 0; i < getChildCount(); i++) {
+            if (getChildAt(i) instanceof SimpleBlockView) {
+                if (getChildAt(i).equals(view)) {
+                    return number;
+                }
+                number++;
+            }
+        }
+        return -1;
     }
 
-//
-//    @Override
-//    public Parcelable onSaveInstanceState() {
-//        Parcelable superState = super.onSaveInstanceState();
-//        SavedState ss = new SavedState(superState);
-//        ss.childrenStates = new SparseArray();
-//        ss.widthes = new ArrayList<>();
-//        ss.heightes = new ArrayList<>();
-//
-//        Log.d(TAG, "save " + getChildCount());
-//        for (int i = 0; i < getChildCount(); i++) {
-//            Log.d(TAG, "" + getChildAt(i).isSaveEnabled());
-//            if (getChildAt(i) instanceof SimpleBlockView) {
-//
-//                ss.widthes.add(((SimpleBlockView) getChildAt(i)).getOriginalWidth());
-//                ss.widthes.add(((SimpleBlockView) getChildAt(i)).getOriginalHeight());
-//            }
-//            getChildAt(i).saveHierarchyState(ss.childrenStates);
-//        }
-//        return ss;
-//    }
-//
-//    @Override
-//    public void onRestoreInstanceState(Parcelable state) {
-//        SavedState ss = (SavedState) state;
-//        super.onRestoreInstanceState(ss.getSuperState());
-//        Log.d(TAG, "restore " + getChildCount());
-//        for (int i = 0; i < getChildCount(); i++) {
-//            getChildAt(i).restoreHierarchyState(ss.childrenStates);
-//        }
-//    }
-//
-//    @Override
-//    protected void dispatchSaveInstanceState(SparseArray<Parcelable> container) {
-//        dispatchFreezeSelfOnly(container);
-//    }
-//
-//    @Override
-//    protected void dispatchRestoreInstanceState(SparseArray<Parcelable> container) {
-//        dispatchThawSelfOnly(container);
-//    }
-//
-//    static class SavedState extends BaseSavedState {
-//        SparseArray childrenStates;
-//
-//        List<Float> widthes;
-//        List<Float> heightes;
-//
-//        SavedState(Parcelable superState) {
-//            super(superState);
-//        }
-//
-//        private SavedState(Parcel in, ClassLoader classLoader) {
-//            super(in);
-//            widthes = in.readArrayList(getClass().getClassLoader());
-//            heightes = in.readArrayList(getClass().getClassLoader());
-////            childrenStates = in.readSparseArray(classLoader);
-//        }
-//
-//        @Override
-//        public void writeToParcel(Parcel out, int flags) {
-//            super.writeToParcel(out, flags);
-//            out.writeList(widthes);
-//            out.writeList(heightes);
-////            out.writeSparseArray(childrenStates);
-//        }
-//
-//        public static final ClassLoaderCreator<SavedState> CREATOR
-//                = new ClassLoaderCreator<SavedState>() {
-//            @Override
-//            public SavedState createFromParcel(Parcel source, ClassLoader loader) {
-//                return new SavedState(source, loader);
-//            }
-//
-//            @Override
-//            public SavedState createFromParcel(Parcel source) {
-//                return createFromParcel(source, null);
-//            }
-//
-//            public SavedState[] newArray(int size) {
-//                return new SavedState[size];
-//            }
-//        };
-//    }
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+        FlowChartSavedState ss = new FlowChartSavedState(superState);
+
+        ss.mScrollX = getScrollX();
+        ss.mScrollY = getScrollY();
+        ss.mCurrentScale = mCurrentScale;
+
+        for (int i = 0; i < getChildCount(); i++) {
+            if (getChildAt(i) instanceof SavedStateChild) {
+                ((SavedStateChild) getChildAt(i)).saveState(ss);
+            }
+
+        }
+
+        return ss;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        FlowChartSavedState ss = (FlowChartSavedState) state;
+        super.onRestoreInstanceState(ss.getSuperState());
+
+        scrollTo(ss.mScrollX, ss.mScrollY);
+        mCurrentScale = ss.mCurrentScale;
+
+        for (int i = 0; i < ss.mBlockType.size(); i++) {
+            switch (ss.mBlockType.get(i)) {
+                case FlowChartSavedState.OPERATION_BLOCK:
+                    OperationBlockView operationBlockView = new OperationBlockView(getContext());
+                    addView(operationBlockView);
+                    operationBlockView.restoreState(ss, i);
+                    break;
+                case FlowChartSavedState.CONDITION_BLOCK:
+                    ConditionBlockView conditionBlockView = new ConditionBlockView(getContext());
+                    addView(conditionBlockView);
+                    conditionBlockView.restoreState(ss, i);
+                    break;
+            }
+        }
+        mLineManager = new LineManager(getContext(), this);
+        for (int i = 0; i < ss.mSide1.size(); i++) {
+            SimpleBlockView blockView1 = (SimpleBlockView) getChildAt(i + ss.mNumBlock1.get(i));
+            SimpleBlockView blockView2 = (SimpleBlockView) getChildAt(i + ss.mNumBlock2.get(i));
+
+            SimpleLine.BlockSide side1 = ss.mSide1.get(i);
+            SimpleLine.BlockSide side2 = ss.mSide2.get(i);
+
+            mLineManager.addBlock(blockView1, side1);
+            mLineManager.addBlock(blockView2, side2);
+
+        }
+
+    }
+
+    @Override
+    protected void dispatchSaveInstanceState(SparseArray<Parcelable> container) {
+        dispatchFreezeSelfOnly(container);
+    }
+
+    @Override
+    protected void dispatchRestoreInstanceState(SparseArray<Parcelable> container) {
+        dispatchThawSelfOnly(container);
+    }
+
+    public enum ViewGroupMode {
+        FREE,
+        CHILD_IN_ACTION
+    }
+
+    public static class FlowChartSavedState extends BaseSavedState {
+
+        public static final int OPERATION_BLOCK = 1;
+        public static final int CONDITION_BLOCK = 2;
+        public static final ClassLoaderCreator<FlowChartSavedState> CREATOR
+                = new ClassLoaderCreator<FlowChartSavedState>() {
+            @Override
+            public FlowChartSavedState createFromParcel(Parcel source, ClassLoader loader) {
+                return new FlowChartSavedState(source, loader);
+            }
+
+            @Override
+            public FlowChartSavedState createFromParcel(Parcel source) {
+                return createFromParcel(source, null);
+            }
+
+            public FlowChartSavedState[] newArray(int size) {
+                return new FlowChartSavedState[size];
+            }
+        };
+        public ArrayList<Float> mWidth = new ArrayList<>();
+        public ArrayList<Float> mHeight = new ArrayList<>();
+        public ArrayList<Float> mStrokeWidth = new ArrayList<>();
+        public ArrayList<Float> mTextSize = new ArrayList<>();
+        public ArrayList<Integer> mColorStroke = new ArrayList<>();
+        public ArrayList<Integer> mTextColor = new ArrayList<>();
+        public ArrayList<Integer> mPositionX = new ArrayList<>();
+        public ArrayList<Integer> mPositionY = new ArrayList<>();
+        public ArrayList<Integer> mBlockType = new ArrayList<>();
+        public ArrayList<String> mText = new ArrayList<>();
+        public ArrayList<Integer> mNumBlock1 = new ArrayList<>();
+        public ArrayList<Integer> mNumBlock2 = new ArrayList<>();
+        public ArrayList<SimpleLine.BlockSide> mSide1 = new ArrayList<>();
+        public ArrayList<SimpleLine.BlockSide> mSide2 = new ArrayList<>();
+        int mScrollX;
+        int mScrollY;
+        float mCurrentScale;
+
+
+        FlowChartSavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        @SuppressWarnings("unchecked")
+        private FlowChartSavedState(Parcel in, ClassLoader classLoader) {
+            super(in);
+            mScrollX = in.readInt();
+            mScrollY = in.readInt();
+            mCurrentScale = in.readFloat();
+
+            mWidth = in.readArrayList(getClass().getClassLoader());
+            mHeight = in.readArrayList(getClass().getClassLoader());
+            mStrokeWidth = in.readArrayList(getClass().getClassLoader());
+            mTextSize = in.readArrayList(getClass().getClassLoader());
+            mColorStroke = in.readArrayList(getClass().getClassLoader());
+            mTextColor = in.readArrayList(getClass().getClassLoader());
+            mPositionX = in.readArrayList(getClass().getClassLoader());
+            mPositionY = in.readArrayList(getClass().getClassLoader());
+            mBlockType = in.readArrayList(getClass().getClassLoader());
+            mText = in.readArrayList(getClass().getClassLoader());
+
+            mNumBlock1 = in.readArrayList(getClass().getClassLoader());
+            mNumBlock2 = in.readArrayList(getClass().getClassLoader());
+            mSide1 = in.readArrayList(getClass().getClassLoader());
+            mSide2 = in.readArrayList(getClass().getClassLoader());
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+
+            out.writeInt(mScrollX);
+            out.writeInt(mScrollY);
+            out.writeFloat(mCurrentScale);
+
+            out.writeList(mWidth);
+            out.writeList(mHeight);
+            out.writeList(mStrokeWidth);
+            out.writeList(mTextSize);
+            out.writeList(mColorStroke);
+            out.writeList(mTextColor);
+            out.writeList(mPositionX);
+            out.writeList(mPositionY);
+            out.writeList(mBlockType);
+            out.writeList(mText);
+
+            out.writeList(mNumBlock1);
+            out.writeList(mNumBlock2);
+            out.writeList(mSide1);
+            out.writeList(mSide2);
+
+        }
+    }
 
 
 }

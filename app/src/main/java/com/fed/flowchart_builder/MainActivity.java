@@ -1,10 +1,8 @@
 package com.fed.flowchart_builder;
 
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.view.View;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.fed.flowchart_builder.flowChartViews.FlowChartViewGroup;
@@ -21,7 +19,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         mFlowChartViewGroup = findViewById(R.id.flowchart_view_group);
+
 
         final BlockCreateFragment blockCreateFragment = new BlockCreateFragment(new BlockCreateFragment.OnActivityRequest() {
             @Override
@@ -43,7 +43,9 @@ public class MainActivity extends AppCompatActivity {
                 mFloatingActionButton.hide();
             }
         });
+
     }
+
 
     @Override
     protected void onResume() {
@@ -57,13 +59,4 @@ public class MainActivity extends AppCompatActivity {
         mFloatingActionButton.show();
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState, @NonNull PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-    }
 }

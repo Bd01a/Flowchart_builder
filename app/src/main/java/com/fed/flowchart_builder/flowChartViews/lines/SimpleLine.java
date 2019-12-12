@@ -10,6 +10,8 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -17,19 +19,23 @@ import androidx.annotation.Nullable;
 
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.flowChartViews.FlowChartViewGroup;
+import com.fed.flowchart_builder.flowChartViews.SavedStateChild;
 import com.fed.flowchart_builder.flowChartViews.blocks.SimpleBlockView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class SimpleLine extends View {
+public class SimpleLine extends View implements SavedStateChild {
 
     private static final String TAG = "SimpleLine";
     private static final float ARROW_COEF_ALONG = 0.7f;
     private static final float ARROW_COEF_ACROSS = 0.4f;
 
     private Paint mPaint;
+    private Paint mFramePaint;
+    private Paint mFrameFillPaint;
+
     private List<PointF> mPoints;
     private float mStrokeWidth;
     private float mCurStrokeWidth;
@@ -52,7 +58,28 @@ public class SimpleLine extends View {
 
     private boolean mIsDrawDeleteIcon;
     private Drawable mDeleteIcon;
+    private PointF mDeleteIconPosition = new PointF();
     private RectF mDeleteIconRect = new RectF();
+    private float mDistanceBetweenIconAndRound;
+    private float mIconSize;
+
+    private PointF mTranslation = new PointF();
+
+    private GestureDetector mGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            if (mIsDrawDeleteIcon && isInRect(mDeleteIconRect, e.getX(), e.getY())) {
+                deleteSelf();
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
+    });
+
 
     public SimpleLine(Context context) {
         super(context);
@@ -74,19 +101,19 @@ public class SimpleLine extends View {
     }
 
     public float getLineWidth() {
-        return mWidth;
+        return mWidth * mViewGroup.getCurrentScale() + mIconSize;
     }
 
     public float getLineHeight() {
-        return mHeight;
+        return mHeight * mViewGroup.getCurrentScale() + mIconSize;
     }
 
     public float getLineX() {
-        return mX;
+        return mX * mViewGroup.getCurrentScale() - mIconSize / 2;
     }
 
     public float getLineY() {
-        return mY;
+        return mY * mViewGroup.getCurrentScale() - mIconSize / 2;
     }
 
     private void init(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -94,8 +121,28 @@ public class SimpleLine extends View {
         mPoints = new ArrayList<>();
         mCurStrokeWidth = mStrokeWidth;
         mDistanceBlockLine = getResources().getDimension(R.dimen.distance_block_line);
+        mIconSize = getResources().getDimension(R.dimen.icon_block_size);
         mDeleteIcon = getResources().getDrawable(R.drawable.ic_delete_blue_24dp);
+        mDistanceBetweenIconAndRound = getResources().getDimension(R.dimen.distance_between_icon_and_round);
         initPaint();
+        initFramePaints();
+    }
+
+    private void initFramePaints() {
+        float strokeWidthFrame = getResources().getDimension(R.dimen.stroke_width_frame_block);
+        int colorStrokeFrame = getResources().getColor(R.color.color_stroke_frame);
+
+        mFramePaint = new Paint();
+        mFramePaint.setStyle(Paint.Style.STROKE);
+        mFramePaint.setAntiAlias(true);
+        mFramePaint.setStrokeWidth(strokeWidthFrame);
+        mFramePaint.setColor(colorStrokeFrame);
+
+        mFrameFillPaint = new Paint();
+        mFrameFillPaint.setStyle(Paint.Style.FILL);
+        mFrameFillPaint.setAntiAlias(true);
+        int colorBackground = getResources().getColor(R.color.color_background);
+        mFrameFillPaint.setColor(colorBackground);
     }
 
     private void initPaint() {
@@ -112,6 +159,14 @@ public class SimpleLine extends View {
         mSide1 = side1;
         mSide2 = side2;
         createLine();
+    }
+
+    private boolean isInRect(RectF rect, float x, float y) {
+        float r = rect.right + mTranslation.x;
+        float l = rect.left + mTranslation.x;
+        float b = rect.bottom + mTranslation.y;
+        float t = rect.top + mTranslation.y;
+        return x > l && x < r && y < b && y > t;
     }
 
     private void createLine() {
@@ -376,7 +431,7 @@ public class SimpleLine extends View {
             if (start.y > end.y) {
                 nextEnd.y = start.y;
             } else {
-                nextStart.x = rightX2 + (leftX1 - rightX2) / 2;
+                nextStart.x = rightX1 + (leftX2 - rightX1) / 2;
                 nextEnd.x = nextStart.x;
                 start.x = nextStart.x;
             }
@@ -384,7 +439,7 @@ public class SimpleLine extends View {
             if (start.y > end.y) {
                 nextEnd.y = start.y;
             } else {
-                nextStart.x = rightX2 + (leftX1 - rightX2) / 2;
+                nextStart.x = rightX1 + (leftX2 - rightX1) / 2;
                 nextEnd.x = nextStart.x;
             }
         } else if (end.x >= start.x) {
@@ -413,7 +468,7 @@ public class SimpleLine extends View {
             if (start.y < end.y) {
                 nextEnd.y = start.y;
             } else {
-                nextStart.x = rightX2 + (leftX1 - rightX2) / 2;
+                nextStart.x = rightX1 + (leftX2 - rightX1) / 2;
                 nextEnd.x = nextStart.x;
                 start.x = nextStart.x;
             }
@@ -421,7 +476,7 @@ public class SimpleLine extends View {
             if (start.y < end.y) {
                 nextEnd.y = start.y;
             } else {
-                nextStart.x = rightX2 + (leftX1 - rightX2) / 2;
+                nextStart.x = rightX1 + (leftX2 - rightX1) / 2;
                 nextEnd.x = nextStart.x;
             }
         } else if (end.x >= start.x) {
@@ -837,10 +892,17 @@ public class SimpleLine extends View {
     }
 
     @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return mGestureDetector.onTouchEvent(event);
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         float scale = mViewGroup.getCurrentScale();
-        canvas.translate((-mX + mStrokeWidth / 2) * scale, (-mY + mStrokeWidth / 2) * scale);
+        mTranslation.x = -getLineX() + (mStrokeWidth / 2) * scale;
+        mTranslation.y = -getLineY() + (mStrokeWidth / 2) * scale;
+        canvas.translate(mTranslation.x, mTranslation.y);
         for (int i = 1; i < mPoints.size(); i++) {
             canvas.drawLine((mPoints.get(i - 1).x) * scale, (mPoints.get(i - 1).y) * scale,
                     (mPoints.get(i).x) * scale, (mPoints.get(i).y) * scale, mPaint);
@@ -902,10 +964,37 @@ public class SimpleLine extends View {
                 }
             }
         }
+        if (mIsDrawDeleteIcon) {
+            mDeleteIcon.draw(canvas);
+            drawIcon(canvas, mDeleteIcon, mDeleteIconPosition, mDeleteIconRect);
+        }
 
     }
 
+    private void deleteSelf() {
+        mViewGroup.removeView(this);
+        mViewGroup.invalidate();
+    }
+
+    private void drawIcon(Canvas canvas, Drawable icon, PointF point, RectF rect) {
+        float scale = mViewGroup.getCurrentScale();
+        icon.setBounds((int) ((point.x) * scale - mIconSize / 2 + mDistanceBetweenIconAndRound),
+                (int) ((point.y) * scale - mIconSize / 2 + mDistanceBetweenIconAndRound),
+                (int) ((point.x) * scale + mIconSize / 2 - mDistanceBetweenIconAndRound),
+                (int) ((point.y) * scale + mIconSize / 2 - mDistanceBetweenIconAndRound));
+
+        mDeleteIconRect.right = point.x * scale + mIconSize / 2;
+        mDeleteIconRect.left = point.x * scale - mIconSize / 2;
+        mDeleteIconRect.top = point.y * scale - mIconSize / 2;
+        mDeleteIconRect.bottom = point.y * scale + mIconSize / 2;
+
+        canvas.drawOval(rect, mFrameFillPaint);
+        canvas.drawOval(rect, mFramePaint);
+        icon.draw(canvas);
+    }
+
     public void findMeasure() {
+
 
         float lX = mPoints.get(0).x;
         float bY = mPoints.get(0).y;
@@ -925,6 +1014,11 @@ public class SimpleLine extends View {
                 tY = mPoints.get(i).y;
             }
         }
+
+        mDeleteIconPosition.x = (mPoints.get(mPoints.size() / 2 - 1).x + mPoints.get(mPoints.size() / 2).x) / 2;
+        mDeleteIconPosition.y = (mPoints.get(mPoints.size() / 2 - 1).y + mPoints.get(mPoints.size() / 2).y) / 2;
+
+
         mWidth = rX - lX + mStrokeWidth + mDistanceBlockLine;
         mHeight = bY - tY + mStrokeWidth + mDistanceBlockLine;
         mX = lX - mDistanceBlockLine / 2;
@@ -946,14 +1040,22 @@ public class SimpleLine extends View {
 
     }
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        findMeasure();
-        int widthMeasured = (int) (mWidth);
-        int heightMeasured = (int) (mHeight);
+    public void checkBlocks() {
 
-        setMeasuredDimension(resolveSize(widthMeasured, widthMeasureSpec),
-                resolveSize(heightMeasured, heightMeasureSpec));
+        boolean block1Exist = false;
+        boolean block2Exist = false;
+        for (int i = 0; i < mViewGroup.getChildCount(); i++) {
+            if (mViewGroup.getChildAt(i).equals(mBlock1)) {
+                block1Exist = true;
+            }
+            if (mViewGroup.getChildAt(i).equals(mBlock2)) {
+                block2Exist = true;
+            }
+        }
+
+        if (!block1Exist || !block2Exist) {
+            mViewGroup.removeView(this);
+        }
     }
 
     public enum BlockSide {
@@ -962,4 +1064,14 @@ public class SimpleLine extends View {
         TOP,
         BOTTOM
     }
+
+    public void saveState(FlowChartViewGroup.FlowChartSavedState ss) {
+
+        ss.mNumBlock1.add(mViewGroup.getNumberBlockChild(mBlock1));
+        ss.mNumBlock2.add(mViewGroup.getNumberBlockChild(mBlock2));
+        ss.mSide1.add(mSide1);
+        ss.mSide2.add(mSide2);
+
+    }
+
 }
