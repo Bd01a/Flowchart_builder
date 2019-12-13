@@ -1,9 +1,9 @@
-package com.fed.flowchart_builder.flowChartViews.lines;
+package com.fed.flowchart_builder.presentation.flowChartViews.lines;
 
 import android.content.Context;
 
-import com.fed.flowchart_builder.flowChartViews.FlowChartViewGroup;
-import com.fed.flowchart_builder.flowChartViews.blocks.SimpleBlockView;
+import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
+import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 
 import java.util.ArrayList;
 import java.util.List;

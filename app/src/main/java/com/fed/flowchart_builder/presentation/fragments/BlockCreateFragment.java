@@ -1,4 +1,4 @@
-package com.fed.flowchart_builder.fragments;
+package com.fed.flowchart_builder.presentation.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,10 +12,10 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fed.flowchart_builder.R;
-import com.fed.flowchart_builder.adapters.BlocksAdapter;
 import com.fed.flowchart_builder.data.BlockDescription;
-import com.fed.flowchart_builder.flowChartViews.FlowChartViewGroup;
-import com.fed.flowchart_builder.flowChartViews.blocks.SimpleBlockView;
+import com.fed.flowchart_builder.presentation.adapters.BlocksAdapter;
+import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
+import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 
 public class BlockCreateFragment extends Fragment {
 
@@ -55,4 +55,5 @@ public class BlockCreateFragment extends Fragment {
     public interface OnActivityRequest {
         FlowChartViewGroup getFlowChartViewGroup();
     }
+
 }

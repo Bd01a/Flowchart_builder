@@ -1,4 +1,4 @@
-package com.fed.flowchart_builder.flowChartViews.lines;
+package com.fed.flowchart_builder.presentation.flowChartViews.lines;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -18,9 +18,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.fed.flowchart_builder.R;
-import com.fed.flowchart_builder.flowChartViews.FlowChartViewGroup;
-import com.fed.flowchart_builder.flowChartViews.SavedStateChild;
-import com.fed.flowchart_builder.flowChartViews.blocks.SimpleBlockView;
+import com.fed.flowchart_builder.data.ChartRoom.ChartLine;
+import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
+import com.fed.flowchart_builder.presentation.flowChartViews.SavedStateChild;
+import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -1058,11 +1059,16 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
-    public enum BlockSide {
-        LEFT,
-        RIGHT,
-        TOP,
-        BOTTOM
+    public ChartLine save() {
+
+        ChartLine chartLine = new ChartLine();
+
+        chartLine.setNumBlock1(mViewGroup.getNumberBlockChild(mBlock1));
+        chartLine.setNumBlock2(mViewGroup.getNumberBlockChild(mBlock2));
+        chartLine.setSide1(mSide1.getNum());
+        chartLine.setSide2(mSide2.getNum());
+
+        return chartLine;
     }
 
     public void saveState(FlowChartViewGroup.FlowChartSavedState ss) {
@@ -1072,6 +1078,38 @@ public class SimpleLine extends View implements SavedStateChild {
         ss.mSide1.add(mSide1);
         ss.mSide2.add(mSide2);
 
+    }
+
+    public enum BlockSide {
+        LEFT(301),
+        RIGHT(302),
+        TOP(303),
+        BOTTOM(304);
+
+        private final int mNum;
+
+        BlockSide(int num) {
+            mNum = num;
+        }
+
+        @Nullable
+        static public BlockSide getBlockSide(int num) {
+            if (num == LEFT.getNum()) {
+                return LEFT;
+            } else if (num == RIGHT.getNum()) {
+                return RIGHT;
+            } else if (num == TOP.getNum()) {
+                return TOP;
+            } else if (num == BOTTOM.getNum()) {
+                return BOTTOM;
+            } else {
+                return null;
+            }
+        }
+
+        public int getNum() {
+            return mNum;
+        }
     }
 
 }

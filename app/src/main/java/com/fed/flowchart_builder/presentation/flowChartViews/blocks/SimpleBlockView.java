@@ -1,4 +1,4 @@
-package com.fed.flowchart_builder.flowChartViews.blocks;
+package com.fed.flowchart_builder.presentation.flowChartViews.blocks;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,10 +24,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.fed.flowchart_builder.R;
-import com.fed.flowchart_builder.adapters.ColorArrayAdapter;
-import com.fed.flowchart_builder.flowChartViews.FlowChartViewGroup;
-import com.fed.flowchart_builder.flowChartViews.SavedStateChild;
-import com.fed.flowchart_builder.flowChartViews.lines.SimpleLine;
+import com.fed.flowchart_builder.data.ChartRoom.ChartBlock;
+import com.fed.flowchart_builder.presentation.adapters.ColorArrayAdapter;
+import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
+import com.fed.flowchart_builder.presentation.flowChartViews.SavedStateChild;
+import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLine;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -582,14 +583,33 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         ss.mTextColor.add(mTextColor);
         ss.mPositionX.add(mPosition.x);
         ss.mPositionY.add(mPosition.y);
-        if (this instanceof OperationBlockView) {
-            ss.mBlockType.add(FlowChartViewGroup.FlowChartSavedState.OPERATION_BLOCK);
-        } else if (this instanceof ConditionBlockView) {
-            ss.mBlockType.add(FlowChartViewGroup.FlowChartSavedState.CONDITION_BLOCK);
-        }
+
+        ss.mBlockType.add(getSelfType());
+
         ss.mText.add(mText);
         ss.mTextSize.add(mTextSize);
     }
+
+    public ChartBlock save() {
+
+        ChartBlock chartBlock = new ChartBlock();
+        chartBlock.setColorStroke(mColorStroke);
+        chartBlock.setWidth(mWidth);
+        chartBlock.setHeight(mHeight);
+        chartBlock.setStrokeWidth(mStrokeWidth);
+        chartBlock.setTextColor(mTextColor);
+        chartBlock.setPositionX(mPosition.x);
+        chartBlock.setPositionY(mPosition.y);
+
+        chartBlock.setBlockType(getSelfType());
+
+        chartBlock.setText(mText);
+        chartBlock.setTextSize(mTextSize);
+        return chartBlock;
+    }
+
+
+    abstract int getSelfType();
 
     public void restoreState(FlowChartViewGroup.FlowChartSavedState ss, int index) {
         mColorStroke = ss.mColorStroke.get(index);
@@ -601,6 +621,18 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         mPosition.y = ss.mPositionY.get(index);
         mText = ss.mText.get(index);
         mTextSize = ss.mTextSize.get(index);
+    }
+
+    public void setAttr(ChartBlock chartBlock) {
+        mColorStroke = chartBlock.getColorStroke();
+        mWidth = chartBlock.getWidth();
+        mHeight = chartBlock.getHeight();
+        mStrokeWidth = chartBlock.getStrokeWidth();
+        mTextColor = chartBlock.getTextColor();
+        mPosition.x = chartBlock.getPositionX();
+        mPosition.y = chartBlock.getPositionY();
+        mText = chartBlock.getText();
+        mTextSize = chartBlock.getTextSize();
     }
 
 

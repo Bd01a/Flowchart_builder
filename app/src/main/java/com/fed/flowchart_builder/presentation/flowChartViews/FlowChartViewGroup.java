@@ -1,4 +1,4 @@
-package com.fed.flowchart_builder.flowChartViews;
+package com.fed.flowchart_builder.presentation.flowChartViews;
 
 import android.content.Context;
 import android.graphics.PointF;
@@ -14,11 +14,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Scroller;
 
-import com.fed.flowchart_builder.flowChartViews.blocks.ConditionBlockView;
-import com.fed.flowchart_builder.flowChartViews.blocks.OperationBlockView;
-import com.fed.flowchart_builder.flowChartViews.blocks.SimpleBlockView;
-import com.fed.flowchart_builder.flowChartViews.lines.LineManager;
-import com.fed.flowchart_builder.flowChartViews.lines.SimpleLine;
+import com.fed.flowchart_builder.data.BlockDescription;
+import com.fed.flowchart_builder.presentation.flowChartViews.blocks.ConditionBlockView;
+import com.fed.flowchart_builder.presentation.flowChartViews.blocks.CycleBlockView;
+import com.fed.flowchart_builder.presentation.flowChartViews.blocks.InletBlockView;
+import com.fed.flowchart_builder.presentation.flowChartViews.blocks.OperationBlockView;
+import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
+import com.fed.flowchart_builder.presentation.flowChartViews.lines.LineManager;
+import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLine;
 
 import java.util.ArrayList;
 
@@ -317,17 +320,22 @@ public class FlowChartViewGroup extends ViewGroup {
         mCurrentScale = ss.mCurrentScale;
 
         for (int i = 0; i < ss.mBlockType.size(); i++) {
-            switch (ss.mBlockType.get(i)) {
-                case FlowChartSavedState.OPERATION_BLOCK:
-                    OperationBlockView operationBlockView = new OperationBlockView(getContext());
-                    addView(operationBlockView);
-                    operationBlockView.restoreState(ss, i);
-                    break;
-                case FlowChartSavedState.CONDITION_BLOCK:
-                    ConditionBlockView conditionBlockView = new ConditionBlockView(getContext());
-                    addView(conditionBlockView);
-                    conditionBlockView.restoreState(ss, i);
-                    break;
+            if (ss.mBlockType.get(i) == BlockDescription.OPERATION_BLOCK.getId()) {
+                OperationBlockView blockView = new OperationBlockView(getContext());
+                addView(blockView);
+                blockView.restoreState(ss, i);
+            } else if (ss.mBlockType.get(i) == BlockDescription.CONDITION_BLOCK.getId()) {
+                ConditionBlockView blockView = new ConditionBlockView(getContext());
+                addView(blockView);
+                blockView.restoreState(ss, i);
+            } else if (ss.mBlockType.get(i) == BlockDescription.CYCLE_BLOCK.getId()) {
+                CycleBlockView blockView = new CycleBlockView(getContext());
+                addView(blockView);
+                blockView.restoreState(ss, i);
+            } else if (ss.mBlockType.get(i) == BlockDescription.INLET_BLOCK.getId()) {
+                InletBlockView blockView = new InletBlockView(getContext());
+                addView(blockView);
+                blockView.restoreState(ss, i);
             }
         }
         mLineManager = new LineManager(getContext(), this);
@@ -362,24 +370,7 @@ public class FlowChartViewGroup extends ViewGroup {
 
     public static class FlowChartSavedState extends BaseSavedState {
 
-        public static final int OPERATION_BLOCK = 1;
-        public static final int CONDITION_BLOCK = 2;
-        public static final ClassLoaderCreator<FlowChartSavedState> CREATOR
-                = new ClassLoaderCreator<FlowChartSavedState>() {
-            @Override
-            public FlowChartSavedState createFromParcel(Parcel source, ClassLoader loader) {
-                return new FlowChartSavedState(source, loader);
-            }
 
-            @Override
-            public FlowChartSavedState createFromParcel(Parcel source) {
-                return createFromParcel(source, null);
-            }
-
-            public FlowChartSavedState[] newArray(int size) {
-                return new FlowChartSavedState[size];
-            }
-        };
         public ArrayList<Float> mWidth = new ArrayList<>();
         public ArrayList<Float> mHeight = new ArrayList<>();
         public ArrayList<Float> mStrokeWidth = new ArrayList<>();
@@ -390,10 +381,12 @@ public class FlowChartViewGroup extends ViewGroup {
         public ArrayList<Integer> mPositionY = new ArrayList<>();
         public ArrayList<Integer> mBlockType = new ArrayList<>();
         public ArrayList<String> mText = new ArrayList<>();
+
         public ArrayList<Integer> mNumBlock1 = new ArrayList<>();
         public ArrayList<Integer> mNumBlock2 = new ArrayList<>();
         public ArrayList<SimpleLine.BlockSide> mSide1 = new ArrayList<>();
         public ArrayList<SimpleLine.BlockSide> mSide2 = new ArrayList<>();
+
         int mScrollX;
         int mScrollY;
         float mCurrentScale;
@@ -452,6 +445,23 @@ public class FlowChartViewGroup extends ViewGroup {
             out.writeList(mSide2);
 
         }
+
+        public static final ClassLoaderCreator<FlowChartSavedState> CREATOR
+                = new ClassLoaderCreator<FlowChartSavedState>() {
+            @Override
+            public FlowChartSavedState createFromParcel(Parcel source, ClassLoader loader) {
+                return new FlowChartSavedState(source, loader);
+            }
+
+            @Override
+            public FlowChartSavedState createFromParcel(Parcel source) {
+                return createFromParcel(source, null);
+            }
+
+            public FlowChartSavedState[] newArray(int size) {
+                return new FlowChartSavedState[size];
+            }
+        };
     }
 
 

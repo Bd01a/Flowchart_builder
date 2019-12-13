@@ -1,10 +1,12 @@
-package com.fed.flowchart_builder.flowChartViews.blocks;
+package com.fed.flowchart_builder.presentation.flowChartViews.blocks;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 
 import androidx.annotation.Nullable;
+
+import com.fed.flowchart_builder.data.BlockDescription;
 
 public class ConditionBlockView extends SimpleBlockView {
     public ConditionBlockView(Context context) {
@@ -35,5 +37,10 @@ public class ConditionBlockView extends SimpleBlockView {
                 getRect().right + deltaX, getRect().top + middleY - deltaY, getPaint());
         canvas.drawLine(getRect().left + middleX + deltaX, getRect().bottom + deltaY,
                 getRect().left - deltaX, getRect().top + middleY - deltaY, getPaint());
+    }
+
+    @Override
+    int getSelfType() {
+        return BlockDescription.CONDITION_BLOCK.getId();
     }
 }

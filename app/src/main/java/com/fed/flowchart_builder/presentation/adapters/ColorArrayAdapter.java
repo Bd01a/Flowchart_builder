@@ -1,4 +1,4 @@
-package com.fed.flowchart_builder.adapters;
+package com.fed.flowchart_builder.presentation.adapters;
 
 import android.content.Context;
 import android.view.View;
