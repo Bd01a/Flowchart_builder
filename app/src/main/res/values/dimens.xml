@@ -23,6 +23,6 @@
     <dimen name="content_padding_card_chart_item">8dp</dimen>
     <dimen name="margin_card_chart_item">4dp</dimen>
 
-    <integer name="x_default_block">400</integer>
-    <integer name="y_default_block">1000</integer>
+    <integer name="x_default_block">0</integer>
+    <integer name="y_default_block">0</integer>
 </resources>

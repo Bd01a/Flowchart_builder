@@ -8,14 +8,36 @@ import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockV
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Manages all {@link SimpleLineView}
+ *
+ * @author Sergey Fedorov
+ */
 public class LineManager {
     public static final String TAG = "LineManager";
+
     private List<SimpleLineView> mLines;
 
+    /**
+     * need to create new {@link SimpleLineView}
+     */
     private Context mContext;
+
+    /**
+     * ViewGroup where all {@link LineManager#mLines} are located
+     */
     private FlowChartViewGroup mViewGroup;
 
+
+    /**
+     * need to create new {@link SimpleLineView}. Firsly, saved first block, then create new line with
+     * this block and new block, that is passed through {@link LineManager#addBlock(SimpleBlockView, SimpleLineView.BlockSide)}
+     */
     private SimpleBlockView mBlock1;
+
+    /**
+     * side of {@link LineManager#mBlock1} to which the line will be attached
+     */
     private SimpleLineView.BlockSide mSide1;
 
     private boolean mIsDrawDeleteIcons;
@@ -27,11 +49,19 @@ public class LineManager {
     }
 
 
+    /**
+     * @param block1 initialize {@link LineManager#mBlock1}
+     * @param side1 initialize {@link LineManager#mSide1}
+     */
     private void addFirstBlock(SimpleBlockView block1, SimpleLineView.BlockSide side1) {
         mBlock1 = block1;
         mSide1 = side1;
     }
 
+    /**
+     * At the first call, the data will be saved in {@link LineManager#mBlock1} and {@link LineManager#mSide1}.
+     * At the second call, create {@link SimpleLineView} and add it to {@link LineManager#mViewGroup}
+     */
     public void addBlock(SimpleBlockView block, SimpleLineView.BlockSide side) {
         if (mBlock1 != null) {
             SimpleLineView line = new SimpleLineView(mContext);
@@ -48,12 +78,18 @@ public class LineManager {
         }
     }
 
+    /**
+     * calls {@link SimpleLineView#update()} at all {@link LineManager#mLines}
+     */
     public void update() {
         for (SimpleLineView line : mLines) {
             line.update();
         }
     }
 
+    /**
+     * calls {@link SimpleLineView#isDrawDeleteIcon(boolean)} at all {@link LineManager#mLines}
+     */
     public void showDeleteIcons(boolean isShow) {
         mIsDrawDeleteIcons = isShow;
         for (SimpleLineView line : mLines) {
@@ -66,6 +102,9 @@ public class LineManager {
         return mIsDrawDeleteIcons;
     }
 
+    /**
+     * check all {@link LineManager#mLines} for nulls in related {@link SimpleBlockView}
+     */
     public void checkBlocks() {
         for (SimpleLineView line : mLines) {
             line.checkBlocks();

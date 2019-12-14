@@ -1,9 +1,13 @@
 package com.fed.flowchart_builder.presentation.fragments;
 
+import android.content.Context;
+import android.graphics.Point;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,16 +44,23 @@ public class BlockCreateFragment extends Fragment {
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getContext(), 3);
         recyclerViewBlocks.setLayoutManager(mLayoutManager);
         BlocksAdapter blocksAdapter = new BlocksAdapter(BlockDescription.values(), getContext());
+
         blocksAdapter.setOnItemClickListener(new BlocksAdapter.OnItemClickListener() {
             @Override
             public void onClick(BlockDescription blockDescription) {
+                FlowChartViewGroup flowChartViewGroup = mOnActivityRequest.getFlowChartViewGroup();
+                WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+                Display display = windowManager.getDefaultDisplay();
+                Point displaySize = new Point();
+                display.getSize(displaySize);
                 SimpleBlockView blockView = blockDescription.getBlock(getContext());
-                mOnActivityRequest.getFlowChartViewGroup().addView(blockView);
+                blockView.translate((-flowChartViewGroup.getScrollX() - displaySize.x / 2) / flowChartViewGroup.getCurrentScale(),
+                        (-flowChartViewGroup.getScrollY() - displaySize.y / 2) / flowChartViewGroup.getCurrentScale());
+                flowChartViewGroup.addView(blockView);
             }
+
         });
         recyclerViewBlocks.setAdapter(blocksAdapter);
-//        recyclerViewBlocks.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
-//        recyclerViewBlocks.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.HORIZONTAL));
         return layout;
     }
 

@@ -1,7 +1,6 @@
 package com.fed.flowchart_builder.presentation.flowChartViews.blocks;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -11,9 +10,9 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.Parcel;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -21,68 +20,198 @@ import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.data.ChartRoom.ChartBlock;
-import com.fed.flowchart_builder.presentation.adapters.ColorArrayAdapter;
 import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
 import com.fed.flowchart_builder.presentation.flowChartViews.SavedStateChild;
 import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLineView;
+import com.fed.flowchart_builder.presentation.fragments.BlockPropertyDialogFragment;
 
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * View that displays a block, the basic structural unit of a block diagram.
+ *
+ * @author Sergey Fedorov
+ * @attr ref R.styleable.SimpleBlockView_width
+ * @attr ref R.styleable.SimpleBlockView_height
+ * @attr ref R.styleable.SimpleBlockView_color_stroke
+ * @attr ref R.styleable.SimpleBlockView_stroke_width
+ * @attr ref R.styleable.SimpleBlockView_x
+ * @attr ref R.styleable.SimpleBlockView_y
+ * @attr ref R.styleable.SimpleBlockView_text_size
+ * @attr ref R.styleable.SimpleBlockView_text_color
+ * @attr ref R.styleable.SimpleBlockView_text
+ */
 public abstract class SimpleBlockView extends View implements SavedStateChild {
     private static final String TAG = "SimpleBlockViewTAG";
 
-    private static final float RECT_SIZE_COEF = 1f;
+
+    /**
+     * minimum possible block width
+     */
     private static final float MIN_SIZE = 50f;
+    /**
+     * minimum possible block height
+     */
     private static final float MAX_SIZE = 800f;
 
+    /**
+     * if true, auxiliary marking is drawn and the buttons are clickable
+     */
     private boolean mIsSelected;
 
 
+    /**
+     * Rectangle designating block boundaries
+     */
     private RectF mRect = new RectF();
+    /**
+     * Rectangle denoting the boundaries of the auxiliary frame of the block
+     */
     private RectF mFrameRect = new RectF();
+    /**
+     * Paint for drawing block
+     */
     private Paint mPaint;
+    /**
+     * Paint for drawing auxiliary lines
+     */
     private Paint mFramePaint;
+    /**
+     * Paint for fill icons
+     */
     private Paint mFrameFillPaint;
+    /**
+     * Paint for drawing text
+     */
     private Paint mTextPaint;
 
+    /**
+     * Color for {@link SimpleBlockView#mPaint}
+     *
+     * @attr ref R.styleable.SimpleBlockView_color_stroke
+     */
     private int mColorStroke;
-    private float mWidth;
-    private float mHeight;
-    private float mStrokeWidth;
-    private float mCurStrokeWidth;
-    private int mTextColor;
-    private float mIconSize;
 
+    /**
+     * absolute width of {@link SimpleBlockView#mRect}
+     *
+     * @attr ref R.styleable.SimpleBlockView_width
+     */
+    private float mWidth;
+
+    /**
+     * absolute height of {@link SimpleBlockView#mRect}
+     *
+     * @attr ref R.styleable.SimpleBlockView_height
+     */
+    private float mHeight;
+
+    /**
+     * Stroke width for {@link SimpleBlockView#mPaint}
+     *
+     * @attr ref R.styleable.SimpleBlockView_color_stroke
+     */
+    private float mStrokeWidth;
+
+    /**
+     * {@link SimpleBlockView#mStrokeWidth} with considering scaling
+     */
+    private float mCurStrokeWidth;
+
+    /**
+     * Color for {@link SimpleBlockView#mPaint}
+     * @attr ref R.styleable.SimpleBlockView_text_color
+     *
+     */
+    private int mTextColor;
+
+    private float mIconSize;
+    /**
+     * distance beetween icon and stroke around icon
+     */
     private float mDistanceBetweenIconAndRound;
+
+    /**
+     * translation of canvas
+     */
     private PointF mTranslation;
+
+
+    /**
+     * text that is displayed in the middle of the block
+     * @attr ref R.styleable.SimpleBlockView_text
+     */
     private String mText;
-    private StringBuilder mCurText;
+
+    /**
+     * text size for {@link SimpleBlockView#mTextPaint}
+     * @attr ref R.styleable.SimpleBlockView_text_size
+     */
     private float mTextSize;
+
+
+    /**
+     * {@link SimpleBlockView#mTextSize}  with considering scaling
+     */
     private float mCurTextSize;
 
+    /**
+     * stroke width for {@link SimpleBlockView#mFramePaint}
+     */
     private float mStrokeWidthFrame;
+
+
+    /**
+     * Absolute coordinates of this block
+     * @attr ref R.styleable.SimpleBlockView_x
+     * @attr ref R.styleable.SimpleBlockView_y
+     */
     private Point mPosition = new Point();
     private float mParentScale;
 
     private GestureDetector mGestureDetector;
 
     private Drawable mDeleteIcon;
+    /**
+     * define borders of {@link SimpleBlockView#mDeleteIcon}
+     */
     private RectF mDeleteIconRect = new RectF();
     private Drawable mResizeIcon;
+    /**
+     * define borders of {@link SimpleBlockView#mResizeIcon}
+     */
     private RectF mResizeIconRect = new RectF();
     private Drawable mAddLineIcon;
+
+    /**
+     * if true {@link SimpleBlockView#mAddLineIcon} must be painted
+     */
     private boolean mIsShowAddIcons;
+    /**
+     * define borders of left {@link SimpleBlockView#mAddLineIcon}
+     */
     private RectF mAddLineIconRectLeft = new RectF();
+    /**
+     * define borders of top {@link SimpleBlockView#mAddLineIcon}
+     */
     private RectF mAddLineIconRectTop = new RectF();
+    /**
+     * define borders of right {@link SimpleBlockView#mAddLineIcon}
+     */
     private RectF mAddLineIconRectRight = new RectF();
+    /**
+     * define borders of bottom {@link SimpleBlockView#mAddLineIcon}
+     */
     private RectF mAddLineIconRectBottom = new RectF();
+    /**
+     * define what is currently view doing
+     */
     private BlockMode mBlockMode = BlockMode.FREE;
 
+    /**
+     * defines sizes of view
+     */
     private PointF geomOptions = new PointF(0, 0);
 
 
@@ -149,6 +278,10 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
     }
 
 
+    /**
+     * checks {@link SimpleBlockView#mWidth} and {@link SimpleBlockView#mHeight} for {@link SimpleBlockView#MAX_SIZE}
+     * and {@link SimpleBlockView#MIN_SIZE}, and assign true values
+     */
     private void specifyBorders() {
         mWidth = mWidth < MIN_SIZE ? MIN_SIZE : mWidth;
         mHeight = mHeight < MIN_SIZE ? MIN_SIZE : mHeight;
@@ -157,14 +290,23 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         mHeight = mHeight > MAX_SIZE ? MAX_SIZE : mHeight;
     }
 
+    /**
+     * @return absolute width of block
+     */
     public float getOriginalWidth() {
         return mWidth;
     }
 
+    /**
+     * @return absolute height of block
+     */
     public float getOriginalHeight() {
         return mHeight;
     }
 
+    /**
+     * defines all geometric paremeters with considering scaling
+     */
     public void updateGeomOptions() {
         mParentScale = ((FlowChartViewGroup) getParent()).getCurrentScale();
 
@@ -306,51 +448,14 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         mGestureDetector = new GestureDetector(getContext(), simpleOnGestureListener);
     }
 
+    /**
+     * creates {@link android.app.AlertDialog} that allows to change block parameters
+     */
     private void dialogSettingsCreate() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        View view = LayoutInflater.from(getContext())
-                .inflate(R.layout.dialog_block_settings_layout, null, false);
-        final EditText textEditText = view.findViewById(R.id.edittext_block_settings_text);
-        final EditText widthEditText = view.findViewById(R.id.edittext_block_settings_width);
-        final EditText heightEditText = view.findViewById(R.id.edittext_block_settings_height);
-        final EditText strokeWidthEditText = view.findViewById(R.id.edittext_block_settings_stroke_width);
-        final EditText textSizeEditText = view.findViewById(R.id.edittext_block_settings_text_size);
-
-        final Spinner colorSpinner = view.findViewById(R.id.spinner_block_settings_color);
-        final Spinner textColorSpinner = view.findViewById(R.id.spinner_block_settings_text_color);
-
-        int[] objects = getResources().getIntArray(R.array.available_colors);
-        List<Integer> colors = new ArrayList<>();
-        int positionTextColor = 0;
-        int positionColorStroke = 0;
-        for (int object : objects) {
-            colors.add(object);
-            if (mTextColor == object) {
-                positionTextColor = colors.size() - 1;
-            }
-            if (mColorStroke == object) {
-                positionColorStroke = colors.size() - 1;
-            }
-        }
-        ColorArrayAdapter colorArrayAdapter = new ColorArrayAdapter(getContext(), android.R.layout.simple_expandable_list_item_1,
-                colors);
-        colorSpinner.setAdapter(colorArrayAdapter);
-        colorSpinner.setSelection(positionColorStroke);
-        textColorSpinner.setAdapter(colorArrayAdapter);
-        textColorSpinner.setSelection(positionTextColor);
-
-        textEditText.setText(mText);
-        widthEditText.setText(String.valueOf((int) mWidth));
-        heightEditText.setText(String.valueOf((int) mHeight));
-        strokeWidthEditText.setText(String.valueOf((int) mStrokeWidth));
-        textSizeEditText.setText(String.valueOf((int) mTextSize));
-
-        builder.setTitle(getResources().getString(R.string.dialog_block_settings_title));
-        builder.setView(view);
-        builder.setPositiveButton(R.string.text_positive_button_dialog_block_settings,
-                new DialogInterface.OnClickListener() {
+        ((FlowChartViewGroup) getParent()).getStartDialogContract().onStart(mText, mWidth, mHeight, mStrokeWidth, mTextSize,
+                mTextColor, mColorStroke, new BlockPropertyDialogFragment.OnPositiveClick() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    public void onClick(EditText textEditText, EditText widthEditText, EditText heightEditText, EditText strokeWidthEditText, EditText textSizeEditText, Spinner colorSpinner, Spinner textColorSpinner) {
                         mText = textEditText.getText().toString();
                         mWidth = Float.valueOf(widthEditText.getText().toString());
                         mHeight = Float.valueOf(heightEditText.getText().toString());
@@ -360,17 +465,22 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
                         mTextColor = (int) (textColorSpinner.getSelectedItem());
                         reInit();
                     }
-                });
-        builder.setNegativeButton(R.string.text_negative_button_dialog_block_settings,
-                new DialogInterface.OnClickListener() {
+
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
+                    public int describeContents() {
+                        return 0;
+                    }
+
+                    @Override
+                    public void writeToParcel(Parcel dest, int flags) {
+
                     }
                 });
-        builder.show();
     }
 
+    /**
+     * change current values due to scaling
+     */
     private void reInit() {
         mCurTextSize = mTextSize * mParentScale;
         mCurStrokeWidth = mStrokeWidth * mParentScale;
@@ -381,20 +491,30 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         requestLayout();
     }
 
+    /**
+     * @param x delta x
+     * @param y delta y
+     */
     private void resizeRect(float x, float y) {
-        mWidth -= x / RECT_SIZE_COEF;
-        mHeight -= y / RECT_SIZE_COEF;
+        mWidth -= x;
+        mHeight -= y;
         specifyBorders();
 
     }
 
 
+    /**
+     * deletes self from childs of parents and call {@link FlowChartViewGroup#checkLines()}
+     */
     private void deleteSelf() {
         FlowChartViewGroup viewGroup = (FlowChartViewGroup) getParent();
         viewGroup.removeView(this);
         viewGroup.checkLines();
     }
 
+    /**
+     * initializes {@link SimpleBlockView#mPaint}
+     */
     private void initPaint() {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
@@ -403,6 +523,9 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         mPaint.setColor(mColorStroke);
     }
 
+    /**
+     * initializes {@link SimpleBlockView#mTextPaint}
+     */
     private void initTextPaint() {
         mTextPaint = new Paint();
         mTextPaint.setAntiAlias(true);
@@ -411,6 +534,9 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         mTextPaint.setColor(mTextColor);
     }
 
+    /**
+     * initializes {@link SimpleBlockView#mFramePaint} and {@link SimpleBlockView#mFrameFillPaint}
+     */
     private void initFramePaints() {
         mStrokeWidthFrame = getResources().getDimension(R.dimen.stroke_width_frame_block);
         int mColorStrokeFrame = getResources().getColor(R.color.color_stroke_frame);
@@ -468,8 +594,8 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
-        int widthMeasured = (int) (mWidth * RECT_SIZE_COEF + mStrokeWidth + mStrokeWidthFrame + mIconSize);
-        int heightMeasured = (int) (mHeight * RECT_SIZE_COEF + mStrokeWidth + mStrokeWidthFrame + mIconSize);
+        int widthMeasured = (int) (mWidth + mStrokeWidth + mStrokeWidthFrame + mIconSize);
+        int heightMeasured = (int) (mHeight + mStrokeWidth + mStrokeWidthFrame + mIconSize);
         setMeasuredDimension(resolveSize(widthMeasured, widthMeasureSpec),
                 resolveSize(heightMeasured, heightMeasureSpec));
     }
@@ -481,6 +607,10 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
     }
 
 
+    /**
+     * drawing if {@link SimpleBlockView#mIsSelected} is true.
+     * draws all icons and auxiliary frame
+     */
     private void drawSelected(Canvas canvas) {
         canvas.drawRect(mFrameRect, mFramePaint);
         drawIcon(canvas, mDeleteIcon, mDeleteIconRect);
@@ -488,6 +618,9 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         drawAddLineIcons(canvas);
     }
 
+    /**
+     * draws all icons
+     */
     private void drawAddLineIcons(Canvas canvas) {
         drawIcon(canvas, mAddLineIcon, mAddLineIconRectLeft);
         drawIcon(canvas, mAddLineIcon, mAddLineIconRectTop);
@@ -495,8 +628,12 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         drawIcon(canvas, mAddLineIcon, mAddLineIconRectBottom);
     }
 
+    /**
+     * draws {@link SimpleBlockView#mText}
+     * needs to overrides for childs
+     */
     public void drawUnSelected(Canvas canvas) {
-        mCurText = new StringBuilder(mText);
+        StringBuilder mCurText = new StringBuilder(mText);
         float textWidth = mTextPaint.measureText(mCurText.toString());
         while (textWidth >= mRect.width() && mCurText.length() > 1) {
             mCurText.delete(0, 1);
@@ -515,6 +652,11 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
     }
 
 
+    /**
+     * draws icon
+     * @param icon what will be painted
+     * @param bounds boundaries of icon
+     */
     private void drawIcon(Canvas canvas, Drawable icon, RectF bounds) {
         icon.setBounds((int) (bounds.left + mDistanceBetweenIconAndRound),
                 (int) (bounds.top + mDistanceBetweenIconAndRound),
@@ -525,11 +667,23 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         icon.draw(canvas);
     }
 
+    /**
+     * changes position
+     * @param x delta x
+     * @param y delta y
+     */
     public void translate(float x, float y){
         mPosition.x -= x;
         mPosition.y -= y;
     }
 
+    /**
+     * determines if a point (x,y) lies in a rectangle with considering translation
+     * @param rect rectangle
+     * @param x x coordinate of point
+     * @param y y coordinate of point
+     * @return true if point in rectangle, false if not
+     */
     private boolean isInRect(RectF rect, float x, float y) {
         float r = rect.right + mTranslation.x;
         float l = rect.left + mTranslation.x;
@@ -573,6 +727,10 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * save own parameters for save state
+     * @param ss saved state of parent view
+     */
     public void saveState(FlowChartViewGroup.FlowChartSavedState ss) {
 
         ss.mColorStroke.add(mColorStroke);
@@ -589,8 +747,10 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         ss.mTextSize.add(mTextSize);
     }
 
+    /**
+     * @return own parameters for saving in database
+     */
     public ChartBlock save() {
-
         ChartBlock chartBlock = new ChartBlock();
         chartBlock.setColorStroke(mColorStroke);
         chartBlock.setWidth(mWidth);
@@ -608,8 +768,16 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
     }
 
 
+    /**
+     * @return type of this view with considering {@link com.fed.flowchart_builder.data.BlockDescription}
+     */
     abstract int getSelfType();
 
+
+    /**
+     * @param ss saved state of parent view
+     * @param index index in lists in saved state
+     */
     public void restoreState(FlowChartViewGroup.FlowChartSavedState ss, int index) {
         mColorStroke = ss.mColorStroke.get(index);
         mWidth = ss.mWidth.get(index);
@@ -622,6 +790,10 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         mTextSize = ss.mTextSize.get(index);
     }
 
+    /**
+     * extracts attributes from {@link ChartBlock}
+     * @param chartBlock objects that contains all attributes of this view
+     */
     public void setAttr(ChartBlock chartBlock) {
         mColorStroke = chartBlock.getColorStroke();
         mWidth = chartBlock.getWidth();

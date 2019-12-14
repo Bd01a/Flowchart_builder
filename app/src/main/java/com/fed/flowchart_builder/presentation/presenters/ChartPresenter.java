@@ -11,9 +11,9 @@ public class ChartPresenter implements ChartContracts.Presenter {
     private ChartRepository mRepository;
     private ChartContracts.View mView;
 
-    public ChartPresenter(ChartContracts.View view) {
+    public ChartPresenter(ChartContracts.View view, ChartRepository chartRepository) {
         mView = view;
-        mRepository = ChartRepository.getChartRepository(mView.getContext());
+        mRepository = chartRepository;
         mRepository.setChartContract(new ChartRepository.RepositoryChartPresenterContract() {
             @Override
             public void getBlocksByChartNameIsCompleted(List<ChartBlock> blocks) {

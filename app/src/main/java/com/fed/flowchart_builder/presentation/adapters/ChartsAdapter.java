@@ -44,6 +44,8 @@ public class ChartsAdapter extends RecyclerView.Adapter<ChartsAdapter.ChartViewH
 
     public interface OnItemClickListener {
         void onClick(String chartName);
+
+        void onLongClick(String chartName, View view);
     }
 
     class ChartViewHolder extends RecyclerView.ViewHolder {
@@ -51,19 +53,26 @@ public class ChartsAdapter extends RecyclerView.Adapter<ChartsAdapter.ChartViewH
         TextView mTextView;
         View mParentView;
 
-        public ChartViewHolder(@NonNull View itemView) {
+        ChartViewHolder(@NonNull View itemView) {
             super(itemView);
             mTextView = itemView.findViewById(R.id.textview_chart_name);
             mParentView = itemView;
 
         }
 
-        public void bind(final String name) {
+        void bind(final String name) {
             mTextView.setText(name);
             mParentView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     mOnItemClickListener.onClick(name);
+                }
+            });
+            mParentView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    mOnItemClickListener.onLongClick(name, mParentView);
+                    return false;
                 }
             });
         }

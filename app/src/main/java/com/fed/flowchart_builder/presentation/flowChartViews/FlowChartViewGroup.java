@@ -1,17 +1,20 @@
 package com.fed.flowchart_builder.presentation.flowChartViews;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.SparseArray;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Scroller;
 
 import com.fed.flowchart_builder.data.BlockDescription;
@@ -22,11 +25,13 @@ import com.fed.flowchart_builder.presentation.flowChartViews.blocks.OperationBlo
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.lines.LineManager;
 import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLineView;
+import com.fed.flowchart_builder.presentation.fragments.BlockPropertyDialogFragment;
 
 import java.util.ArrayList;
 
 
 /**
+ * ViewGroup that holds {@link SimpleBlockView} and {@link SimpleLineView}
  * @author Fedorov Sergey
  */
 public class FlowChartViewGroup extends ViewGroup {
@@ -38,19 +43,42 @@ public class FlowChartViewGroup extends ViewGroup {
     private SimpleBlockView mCurrentSelectedView;
     private static final int MAX_BORDER = 1000;
 
+    /**
+     * radius in which the event is not considered ACTION_MOVE
+     */
+    private static final float TOUCH_SLOP = 0.5f;
+
     private GestureDetector mGestureDetector;
     private Scroller mScroller;
     private ScaleGestureDetector mScaleGestureDetector;
+
     private float mCurrentScale = 1;
 
+    /**
+     * Borders for drawing and scrolling
+     */
     private Rect mBorderViewGroup = new Rect(-MAX_BORDER, -MAX_BORDER, MAX_BORDER, MAX_BORDER);
 
     private boolean mIsScrolling;
+    /**
+     * true until the first onScroll call in one event
+     */
     private boolean mIsFirstScroll;
-    private float mTouchSlop = 0.5f;
+
+    /**
+     * saves coordinates of ACTION_DOWN
+     */
     private PointF mDownPosition;
 
+    /**
+     * controls all {@link SimpleLineView}
+     */
     private LineManager mLineManager;
+
+    /**
+     * contract for dialog of for transmission from {@link SimpleBlockView} to Activity
+     */
+    private StartDialogContract mStartDialogContract;
 
     public FlowChartViewGroup(Context context) {
         super(context);
@@ -67,6 +95,17 @@ public class FlowChartViewGroup extends ViewGroup {
         init();
     }
 
+    public StartDialogContract getStartDialogContract() {
+        return mStartDialogContract;
+    }
+
+    public void setStartDialogContract(StartDialogContract startDialogContract) {
+        mStartDialogContract = startDialogContract;
+    }
+
+    /**
+     * initialization of fields
+     */
     private void init() {
         setSaveEnabled(true);
         initGestureDetector();
@@ -101,6 +140,7 @@ public class FlowChartViewGroup extends ViewGroup {
     public void setMode(ViewGroupMode mode) {
         mMode = mode;
     }
+
 
     public void showAllAddLineIcons(boolean isShow) {
         for (int i = 0; i < getChildCount(); i++) {
@@ -154,7 +194,7 @@ public class FlowChartViewGroup extends ViewGroup {
                     return true;
                 }
                 final float xDiff = calculateDistance(ev);
-                if (xDiff > mTouchSlop) {
+                if (xDiff > TOUCH_SLOP) {
                     mIsScrolling = true;
                     return true;
                 }
@@ -319,7 +359,12 @@ public class FlowChartViewGroup extends ViewGroup {
         FlowChartSavedState ss = (FlowChartSavedState) state;
         super.onRestoreInstanceState(ss.getSuperState());
 
-        scrollTo(ss.mScrollX, ss.mScrollY);
+        WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+        Display display = windowManager.getDefaultDisplay();
+        Point displaySize = new Point();
+        display.getSize(displaySize);
+
+        scrollTo(ss.mScrollX - (displaySize.x - displaySize.y) / 2, ss.mScrollY - (displaySize.y - displaySize.x) / 2);
         mCurrentScale = ss.mCurrentScale;
 
         for (int i = 0; i < ss.mBlockType.size(); i++) {
@@ -465,6 +510,13 @@ public class FlowChartViewGroup extends ViewGroup {
                 return new FlowChartSavedState[size];
             }
         };
+    }
+
+
+    public interface StartDialogContract {
+        void onStart(String text, float width, float height, float strokeWidth,
+                     float textSize, int textColor, int strokeColor,
+                     BlockPropertyDialogFragment.OnPositiveClick onPositiveClick);
     }
 
 

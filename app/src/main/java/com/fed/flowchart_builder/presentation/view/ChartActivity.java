@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.data.BlockDescription;
+import com.fed.flowchart_builder.data.ChartRepository;
 import com.fed.flowchart_builder.data.ChartRoom.ChartBlock;
 import com.fed.flowchart_builder.data.ChartRoom.ChartLine;
 import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
@@ -18,6 +19,7 @@ import com.fed.flowchart_builder.presentation.flowChartViews.blocks.OperationBlo
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLineView;
 import com.fed.flowchart_builder.presentation.fragments.BlockCreateFragment;
+import com.fed.flowchart_builder.presentation.fragments.BlockPropertyDialogFragment;
 import com.fed.flowchart_builder.presentation.presenters.ChartContracts;
 import com.fed.flowchart_builder.presentation.presenters.ChartPresenter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -40,9 +42,16 @@ public class ChartActivity extends AppCompatActivity implements ChartContracts.V
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chart);
-        mPresenter = new ChartPresenter(this);
+        mPresenter = new ChartPresenter(this, ChartRepository.getChartRepository(getContext()));
         mChartName = getIntent().getStringExtra(MainActivity.CHART_NAME);
         mFlowChartViewGroup = findViewById(R.id.flowchart_view_group);
+        mFlowChartViewGroup.setStartDialogContract(new FlowChartViewGroup.StartDialogContract() {
+            @Override
+            public void onStart(String text, float width, float height, float strokeWidth, float textSize, int textColor, int strokeColor, BlockPropertyDialogFragment.OnPositiveClick onPositiveClick) {
+                startBlockPropertyDialog(text, width, height, strokeWidth,
+                        textSize, textColor, strokeColor, onPositiveClick);
+            }
+        });
 
         if (savedInstanceState == null) {
             mPresenter.loadBlocksByChartName(mChartName);
@@ -163,5 +172,14 @@ public class ChartActivity extends AppCompatActivity implements ChartContracts.V
     protected void onDestroy() {
         super.onDestroy();
 
+    }
+
+    public void startBlockPropertyDialog(String text, float width, float height, float strokeWidth,
+                                         float textSize, int textColor, int strokeColor,
+                                         BlockPropertyDialogFragment.OnPositiveClick onPositiveClick) {
+        BlockPropertyDialogFragment blockPropertyDialogFragment =
+                BlockPropertyDialogFragment.newInstance(text, width, height, strokeWidth,
+                        textSize, textColor, strokeColor, onPositiveClick);
+        blockPropertyDialogFragment.show(getSupportFragmentManager(), null);
     }
 }

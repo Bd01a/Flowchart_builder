@@ -7,6 +7,8 @@ import androidx.annotation.StringRes;
 
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.ConditionBlockView;
+import com.fed.flowchart_builder.presentation.flowChartViews.blocks.CycleBlockView;
+import com.fed.flowchart_builder.presentation.flowChartViews.blocks.InletBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.OperationBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 
@@ -26,13 +28,13 @@ public enum BlockDescription {
     CYCLE_BLOCK(R.string.block_cycle, R.mipmap.ic_launcher, 3, new ObjectCreator() {
         @Override
         public SimpleBlockView getBlock(Context context) {
-            return new OperationBlockView(context);
+            return new CycleBlockView(context);
         }
     }),
     INLET_BLOCK(R.string.block_inlet, R.mipmap.ic_launcher, 4, new ObjectCreator() {
         @Override
         public SimpleBlockView getBlock(Context context) {
-            return new OperationBlockView(context);
+            return new InletBlockView(context);
         }
     });
 

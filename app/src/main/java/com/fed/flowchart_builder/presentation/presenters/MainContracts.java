@@ -2,8 +2,6 @@ package com.fed.flowchart_builder.presentation.presenters;
 
 import android.content.Context;
 
-import com.fed.flowchart_builder.data.ChartRoom.ChartBlock;
-
 import java.util.List;
 
 public interface MainContracts {
@@ -14,8 +12,7 @@ public interface MainContracts {
     }
 
     interface Presenter {
-        void addBlocks(List<ChartBlock> blocks);
-
+        void deleteAllByChartName(String chartName);
         void loadChartNames();
 
 

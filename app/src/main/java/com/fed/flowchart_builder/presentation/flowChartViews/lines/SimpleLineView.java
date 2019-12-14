@@ -32,9 +32,11 @@ import java.util.List;
  * View that displays the connection between {@link SimpleBlockView}
  * </p>
  *
- * @author Sergey Fedorov
+ *
  * @attr ref R.styleable#SimpleLine_color_stroke_line
  * @attr ref R.styleable#SimpleLine_stroke_width_line
+ *
+ * @author Sergey Fedorov
  */
 
 public class SimpleLineView extends View implements SavedStateChild {
@@ -142,6 +144,9 @@ public class SimpleLineView extends View implements SavedStateChild {
      */
     private Path mArrowPath = new Path();
 
+    /**
+     * determines whether the delete icon will be drawn
+     */
     private boolean mIsDrawDeleteIcon;
     private Drawable mDeleteIcon;
     private PointF mDeleteIconPosition = new PointF();
@@ -165,7 +170,7 @@ public class SimpleLineView extends View implements SavedStateChild {
 
         @Override
         public boolean onDown(MotionEvent e) {
-            return true;
+            return mIsDrawDeleteIcon && isInRect(mDeleteIconRect, e.getX(), e.getY());
         }
     });
 
@@ -185,6 +190,10 @@ public class SimpleLineView extends View implements SavedStateChild {
         init(context, attrs);
     }
 
+    /**
+     * assigns a value to a variable {@link SimpleLineView#mIsDrawDeleteIcon},
+     * which determines whether the delete icon will be drawn
+     */
     public void isDrawDeleteIcon(boolean isDrawDeleteIcon) {
         mIsDrawDeleteIcon = isDrawDeleteIcon;
     }
@@ -1337,7 +1346,6 @@ public class SimpleLineView extends View implements SavedStateChild {
             }
         }
         if (mIsDrawDeleteIcon) {
-            mDeleteIcon.draw(canvas);
             drawIcon(canvas, mDeleteIcon, mDeleteIconPosition, mDeleteIconRect);
         }
 
@@ -1477,6 +1485,10 @@ public class SimpleLineView extends View implements SavedStateChild {
     }
 
 
+    /**
+     * This object can be equal: {@link BlockSide#LEFT}, {@link BlockSide#RIGHT},
+     * {@link BlockSide#TOP}, {@link BlockSide#BOTTOM}
+     */
     public enum BlockSide {
         LEFT(301),
         RIGHT(302),
