@@ -27,34 +27,119 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class SimpleLine extends View implements SavedStateChild {
+/**
+ * <p>
+ * View that displays the connection between {@link SimpleBlockView}
+ * </p>
+ *
+ * @author Sergey Fedorov
+ * @attr ref R.styleable#SimpleLine_color_stroke_line
+ * @attr ref R.styleable#SimpleLine_stroke_width_line
+ */
+
+public class SimpleLineView extends View implements SavedStateChild {
 
     private static final String TAG = "SimpleLine";
+
+    /**
+     *Determines the relative length of the arrow
+     */
     private static final float ARROW_COEF_ALONG = 0.7f;
+
+    /**
+     * Determines the relative width of the arrow
+     */
     private static final float ARROW_COEF_ACROSS = 0.4f;
 
+    /**
+     * for drawing main elements
+     */
     private Paint mPaint;
+
+    /**
+     * for drawing auxiliary elements
+     */
     private Paint mFramePaint;
+
+
+    /**
+     * fill for auxiliary elements
+     */
     private Paint mFrameFillPaint;
 
+
+    /**
+     * list of line vertices
+     */
     private List<PointF> mPoints;
+
+    /**
+     * stroke width of {@link SimpleLineView#mPaint}
+     */
     private float mStrokeWidth;
+
+
+    /**
+     * {@link SimpleLineView#mStrokeWidth} which takes into account the scale
+     */
     private float mCurStrokeWidth;
+
+
+    /**
+     * color of {@link SimpleLineView#mPaint}
+     */
     private int mStrokeColor;
+
+
+    /**
+     * parent view
+     */
     private FlowChartViewGroup mViewGroup;
 
+    /**
+     * width between the leftmost and the rightmost elements taking into account the icons and the line width
+     */
     private float mWidth;
+    /**
+     * height between the topmost and the bottommost elements taking into account the icons and the line width
+     */
     private float mHeight;
+
+    /**
+     * the X coordinate of the upper left point of this view in the parent view
+     */
     private float mX;
+    /**
+     * the Y coordinate of the upper left point of this view in the parent view
+     */
     private float mY;
 
+    /**
+     * distance from the block to the line where the line runs perpendicular to the block
+     */
     private float mDistanceBlockLine;
 
+
+    /**
+     * the first block that connects this line
+     */
     private SimpleBlockView mBlock1;
+    /**
+     * direction from which the given line will leave the {@link SimpleLineView#mBlock1}
+     */
     private BlockSide mSide1;
+    /**
+     * the second block that connects this line
+     */
     private SimpleBlockView mBlock2;
+    /**
+     * direction from which the given line will leave the {@link SimpleLineView#mBlock2}
+     */
     private BlockSide mSide2;
 
+    /**
+     * auxiliary path for drawing a arrow
+     */
     private Path mArrowPath = new Path();
 
     private boolean mIsDrawDeleteIcon;
@@ -64,6 +149,9 @@ public class SimpleLine extends View implements SavedStateChild {
     private float mDistanceBetweenIconAndRound;
     private float mIconSize;
 
+    /**
+     * canvas translation
+     */
     private PointF mTranslation = new PointF();
 
     private GestureDetector mGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
@@ -82,17 +170,17 @@ public class SimpleLine extends View implements SavedStateChild {
     });
 
 
-    public SimpleLine(Context context) {
+    public SimpleLineView(Context context) {
         super(context);
         init(context, null);
     }
 
-    public SimpleLine(Context context, @Nullable AttributeSet attrs) {
+    public SimpleLineView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs);
     }
 
-    public SimpleLine(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public SimpleLineView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
@@ -129,6 +217,9 @@ public class SimpleLine extends View implements SavedStateChild {
         initFramePaints();
     }
 
+    /**
+     * initialization {@link SimpleLineView#mFramePaint} and {@link SimpleLineView#mFrameFillPaint}
+     */
     private void initFramePaints() {
         float strokeWidthFrame = getResources().getDimension(R.dimen.stroke_width_frame_block);
         int colorStrokeFrame = getResources().getColor(R.color.color_stroke_frame);
@@ -146,6 +237,9 @@ public class SimpleLine extends View implements SavedStateChild {
         mFrameFillPaint.setColor(colorBackground);
     }
 
+    /**
+     * initialization {@link SimpleLineView#mPaint}
+     */
     private void initPaint() {
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
@@ -154,6 +248,13 @@ public class SimpleLine extends View implements SavedStateChild {
         mPaint.setStyle(Paint.Style.STROKE);
     }
 
+    /**
+     * determine parameters and call {@link SimpleLineView#createLine()}
+     * @param block1 determine {@link SimpleLineView#mBlock1}
+     * @param side1 determine {@link SimpleLineView#mSide1}
+     * @param block2 determine {@link SimpleLineView#mBlock2}
+     * @param side2 determine {@link SimpleLineView#mSide2}
+     */
     public void addBlocks(SimpleBlockView block1, BlockSide side1, SimpleBlockView block2, BlockSide side2) {
         mBlock1 = block1;
         mBlock2 = block2;
@@ -162,7 +263,14 @@ public class SimpleLine extends View implements SavedStateChild {
         createLine();
     }
 
-    private boolean isInRect(RectF rect, float x, float y) {
+    /**
+     * determines if a point (x,y) lies in a rectangle with considering translation
+     * @param rect rectangle
+     * @param x x coordinate of point
+     * @param y y coordinate of point
+     * @return true if point in rectangle, false if not
+     */
+    private boolean isInRect(@NonNull RectF rect, float x, float y) {
         float r = rect.right + mTranslation.x;
         float l = rect.left + mTranslation.x;
         float b = rect.bottom + mTranslation.y;
@@ -170,6 +278,10 @@ public class SimpleLine extends View implements SavedStateChild {
         return x > l && x < r && y < b && y > t;
     }
 
+
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     */
     private void createLine() {
         PointF firstPoint = determineStartPoint(mBlock1, mSide1);
         PointF lastPoint = determineStartPoint(mBlock2, mSide2);
@@ -272,6 +384,22 @@ public class SimpleLine extends View implements SavedStateChild {
         findMeasure();
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == BOTTOM, {@link SimpleLineView#mSide2} == BOTTOM
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void bottomToBottom(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float bottomY1, float topY1) {
         if (bottomY1 <= bottomY2 - 2 * mDistanceBlockLine) {
             if (start.x < rightX2 && start.x > leftX2) {
@@ -300,6 +428,22 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == TOP, {@link SimpleLineView#mSide2} == BOTTOM
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void topToBottom(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1, float bottomY1) {
         if (topY1 < bottomY2) {
             if (leftX1 > rightX2) {
@@ -323,6 +467,22 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == RIGHT, {@link SimpleLineView#mSide2} == RIGHT
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void rightToRight(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1, float bottomY1) {
         if (rightX2 > rightX1) {
             if (start.y > bottomY2 || start.y < topY2) {
@@ -349,6 +509,22 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == LEFT, {@link SimpleLineView#mSide2} == LEFT
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void leftToLeft(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1, float bottomY1) {
         if (leftX2 < leftX1) {
             if (start.y > bottomY2 || start.y < topY2) {
@@ -375,6 +551,22 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == RIGHT, {@link SimpleLineView#mSide2} == LEFT
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void rightToLeft(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1, float bottomY1) {
         if (rightX1 < leftX2 + 2 * mDistanceBlockLine && rightX1 > leftX2) {
             nextStart.x = rightX2 + (leftX1 - rightX2) / 2;
@@ -401,6 +593,22 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == LEFT, {@link SimpleLineView#mSide2} == RIGHT
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void leftToRight(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1, float bottomY1) {
         if (leftX1 > rightX2 - 2 * mDistanceBlockLine && leftX1 < rightX2) {
             nextStart.x = rightX2 + (leftX1 - rightX2) / 2;
@@ -427,6 +635,22 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == RIGHT, {@link SimpleLineView#mSide2} == BOTTOM
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void rightToBottom(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1, float bottomY1) {
         if (rightX1 < leftX2 + 2 * mDistanceBlockLine && rightX1 > leftX2) {
             if (start.y > end.y) {
@@ -464,6 +688,22 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == RIGHT, {@link SimpleLineView#mSide2} == TOP
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void rightToTop(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1, float bottomY1) {
         if (rightX1 < leftX2 + 2 * mDistanceBlockLine && rightX1 > leftX2) {
             if (start.y < end.y) {
@@ -501,6 +741,22 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == LEFT, {@link SimpleLineView#mSide2} == TOP
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void leftToTop(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1, float bottomY1) {
         if (leftX1 > rightX2 - 2 * mDistanceBlockLine && leftX1 < rightX2) {
             if (start.y < end.y) {
@@ -538,6 +794,22 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == LEFT, {@link SimpleLineView#mSide2} == BOTTOM
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void leftToBottom(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1, float bottomY1) {
         if (leftX1 > rightX2 - 2 * mDistanceBlockLine && leftX1 < rightX2) {
             if (start.y > end.y) {
@@ -575,6 +847,20 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == BOTTOM, {@link SimpleLineView#mSide2} == LEFT
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     */
     private void bottomToLeft(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float leftX1, float rightX1, float topY2, float bottomY2, float bottomY1) {
         if (bottomY1 > topY2 && bottomY1 < topY2 + 2 * mDistanceBlockLine) {
             if (start.x > end.x) {
@@ -625,6 +911,20 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == TOP, {@link SimpleLineView#mSide2} == LEFT
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void topToLeft(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1) {
         if (topY1 < bottomY2 && topY1 > bottomY2 - 2 * mDistanceBlockLine) {
             if (start.x > end.x) {
@@ -673,6 +973,20 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == BOTTOM, {@link SimpleLineView#mSide2} == RIGHT
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     */
     private void bottomToRight(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX1, float rightX1, float rightX2, float topY2, float bottomY2, float bottomY1) {
         if (bottomY1 > topY2 && bottomY1 < topY2 + 2 * mDistanceBlockLine) {
             if (start.x < end.x) {
@@ -723,6 +1037,20 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == TOP, {@link SimpleLineView#mSide2} == RIGHT
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void topToRight(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX1, float rightX1, float rightX2, float topY2, float bottomY2, float topY1) {
         if (topY1 < bottomY2 && topY1 > bottomY2 - 2 * mDistanceBlockLine) {
             if (start.x < end.x) {
@@ -771,6 +1099,20 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == BOTTOM, {@link SimpleLineView#mSide2} == TOP
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
+     */
     private void bottomToTop(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY1) {
         if (bottomY1 < topY2 + 2 * mDistanceBlockLine && bottomY1 > topY2) {
             start.y = bottomY1 + (topY2 - bottomY1) / 2;
@@ -799,6 +1141,21 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+    /**
+     * generates line between {@link SimpleLineView#mBlock1} and {@link SimpleLineView#mBlock2}
+     * if {@link SimpleLineView#mSide1} == TOP, {@link SimpleLineView#mSide2} == TOP
+     * @param start initial point
+     * @param end last point
+     * @param nextStart which is equal to the initial, but requires redefining
+     * @param nextEnd which is equal to the last, but requires redefining
+     * @param leftX2 X coordinate of the left side of {@link SimpleLineView#mBlock2}
+     * @param rightX2 X coordinate of the right side of {@link SimpleLineView#mBlock2}
+     * @param leftX1 X coordinate of the left side of {@link SimpleLineView#mBlock1}
+     * @param rightX1 X coordinate of the right side of {@link SimpleLineView#mBlock1}
+     * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
+     * @param bottomY2 Y coordinate of the bottom side of {@link SimpleLineView#mBlock2}
+     * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
+     */
     private void topToTop(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1) {
         if (topY1 >= bottomY2 - 2 * mDistanceBlockLine) {
             if (start.x < rightX2 && start.x > leftX2) {
@@ -829,6 +1186,12 @@ public class SimpleLine extends View implements SavedStateChild {
         }
     }
 
+
+    /**
+     * @param first first point near block
+     * @param side side of block
+     * @return second point that lies in {@link SimpleLineView#mDistanceBlockLine}
+     */
     private PointF createSecondPointNearBlock(PointF first, BlockSide side) {
         PointF point = new PointF();
         switch (side) {
@@ -848,6 +1211,10 @@ public class SimpleLine extends View implements SavedStateChild {
         return point;
     }
 
+
+    /**
+     * @return point that lies in the middle of given side of given block
+     */
     private PointF determineStartPoint(SimpleBlockView blockView, BlockSide side) {
         float width = blockView.getOriginalWidth();
         float height = blockView.getOriginalHeight();
@@ -875,18 +1242,22 @@ public class SimpleLine extends View implements SavedStateChild {
         return point;
     }
 
+
+    /**
+     * initializes {@link SimpleLineView#mViewGroup}
+     */
     public void findViewGroup() {
         mViewGroup = (FlowChartViewGroup) getParent();
     }
 
     private void extractAttributes(@NonNull Context context, @Nullable AttributeSet attrs) {
         final Resources.Theme theme = context.getTheme();
-        final TypedArray typedArray = theme.obtainStyledAttributes(attrs, R.styleable.SimpleLine,
+        final TypedArray typedArray = theme.obtainStyledAttributes(attrs, R.styleable.SimpleLineView,
                 0, R.style.SimpleLineDefault);
 
         try {
-            mStrokeColor = typedArray.getColor(R.styleable.SimpleLine_color_stroke_line, 0);
-            mStrokeWidth = typedArray.getDimension(R.styleable.SimpleLine_stroke_width_line, 0);
+            mStrokeColor = typedArray.getColor(R.styleable.SimpleLineView_color_stroke_line, 0);
+            mStrokeWidth = typedArray.getDimension(R.styleable.SimpleLineView_stroke_width_line, 0);
         } finally {
             typedArray.recycle();
         }
@@ -972,11 +1343,19 @@ public class SimpleLine extends View implements SavedStateChild {
 
     }
 
+
+    /**
+     * delete self from childs of parent
+     */
     private void deleteSelf() {
         mViewGroup.removeView(this);
         mViewGroup.invalidate();
     }
 
+    /**
+     * @param point position of icon
+     * @param rect defines bounds of icon
+     */
     private void drawIcon(Canvas canvas, Drawable icon, PointF point, RectF rect) {
         float scale = mViewGroup.getCurrentScale();
         icon.setBounds((int) ((point.x) * scale - mIconSize / 2 + mDistanceBetweenIconAndRound),
@@ -994,8 +1373,12 @@ public class SimpleLine extends View implements SavedStateChild {
         icon.draw(canvas);
     }
 
+    /**
+     * finds {@link SimpleLineView#mX}, {@link SimpleLineView#mY},
+     * {@link SimpleLineView#mWidth}, {@link SimpleLineView#mHeight}
+     * and defines {@link SimpleLineView#mDeleteIconPosition}
+     */
     public void findMeasure() {
-
 
         float lX = mPoints.get(0).x;
         float bY = mPoints.get(0).y;
@@ -1026,6 +1409,10 @@ public class SimpleLine extends View implements SavedStateChild {
         mY = tY - mDistanceBlockLine / 2;
     }
 
+
+    /**
+     * regenerates all points of line
+     */
     public void update() {
         mPoints.clear();
         createLine();
@@ -1041,8 +1428,11 @@ public class SimpleLine extends View implements SavedStateChild {
 
     }
 
-    public void checkBlocks() {
 
+    /**
+     * delete self if {@link SimpleLineView#mBlock1} or {@link SimpleLineView#mBlock2} equals null
+     */
+    public void checkBlocks() {
         boolean block1Exist = false;
         boolean block2Exist = false;
         for (int i = 0; i < mViewGroup.getChildCount(); i++) {
@@ -1055,14 +1445,16 @@ public class SimpleLine extends View implements SavedStateChild {
         }
 
         if (!block1Exist || !block2Exist) {
-            mViewGroup.removeView(this);
+            deleteSelf();
         }
     }
 
+
+    /**
+     * @return own parameters for saving in database
+     */
     public ChartLine save() {
-
         ChartLine chartLine = new ChartLine();
-
         chartLine.setNumBlock1(mViewGroup.getNumberBlockChild(mBlock1));
         chartLine.setNumBlock2(mViewGroup.getNumberBlockChild(mBlock2));
         chartLine.setSide1(mSide1.getNum());
@@ -1071,14 +1463,19 @@ public class SimpleLine extends View implements SavedStateChild {
         return chartLine;
     }
 
-    public void saveState(FlowChartViewGroup.FlowChartSavedState ss) {
 
+    /**
+     * save own parameters for save state
+     * @param ss saved state of parent view
+     */
+    public void saveState(FlowChartViewGroup.FlowChartSavedState ss) {
         ss.mNumBlock1.add(mViewGroup.getNumberBlockChild(mBlock1));
         ss.mNumBlock2.add(mViewGroup.getNumberBlockChild(mBlock2));
         ss.mSide1.add(mSide1);
         ss.mSide2.add(mSide2);
 
     }
+
 
     public enum BlockSide {
         LEFT(301),

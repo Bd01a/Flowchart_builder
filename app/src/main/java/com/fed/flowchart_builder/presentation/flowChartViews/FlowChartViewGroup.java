@@ -21,11 +21,14 @@ import com.fed.flowchart_builder.presentation.flowChartViews.blocks.InletBlockVi
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.OperationBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.lines.LineManager;
-import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLine;
+import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLineView;
 
 import java.util.ArrayList;
 
 
+/**
+ * @author Fedorov Sergey
+ */
 public class FlowChartViewGroup extends ViewGroup {
     private static final String TAG = "ViewGroupTag";
 
@@ -244,11 +247,11 @@ public class FlowChartViewGroup extends ViewGroup {
                 final int childR = positionX + width / 2;
                 final int childB = positionY + height / 2;
                 child.layout(childL, childT, childR, childB);
-            } else if (child instanceof SimpleLine) {
-                float width = ((SimpleLine) child).getLineWidth();
-                float height = ((SimpleLine) child).getLineHeight();
-                float positionX = ((SimpleLine) child).getLineX();
-                float positionY = ((SimpleLine) child).getLineY();
+            } else if (child instanceof SimpleLineView) {
+                float width = ((SimpleLineView) child).getLineWidth();
+                float height = ((SimpleLineView) child).getLineHeight();
+                float positionX = ((SimpleLineView) child).getLineX();
+                float positionY = ((SimpleLineView) child).getLineY();
                 final int childL = (int) positionX;
                 final int childT = (int) positionY;
                 final int childR = (int) (positionX + width);
@@ -343,8 +346,8 @@ public class FlowChartViewGroup extends ViewGroup {
             SimpleBlockView blockView1 = (SimpleBlockView) getChildAt(i + ss.mNumBlock1.get(i));
             SimpleBlockView blockView2 = (SimpleBlockView) getChildAt(i + ss.mNumBlock2.get(i));
 
-            SimpleLine.BlockSide side1 = ss.mSide1.get(i);
-            SimpleLine.BlockSide side2 = ss.mSide2.get(i);
+            SimpleLineView.BlockSide side1 = ss.mSide1.get(i);
+            SimpleLineView.BlockSide side2 = ss.mSide2.get(i);
 
             mLineManager.addBlock(blockView1, side1);
             mLineManager.addBlock(blockView2, side2);
@@ -384,8 +387,8 @@ public class FlowChartViewGroup extends ViewGroup {
 
         public ArrayList<Integer> mNumBlock1 = new ArrayList<>();
         public ArrayList<Integer> mNumBlock2 = new ArrayList<>();
-        public ArrayList<SimpleLine.BlockSide> mSide1 = new ArrayList<>();
-        public ArrayList<SimpleLine.BlockSide> mSide2 = new ArrayList<>();
+        public ArrayList<SimpleLineView.BlockSide> mSide1 = new ArrayList<>();
+        public ArrayList<SimpleLineView.BlockSide> mSide2 = new ArrayList<>();
 
         int mScrollX;
         int mScrollY;

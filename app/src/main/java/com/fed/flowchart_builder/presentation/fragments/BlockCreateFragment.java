@@ -30,6 +30,7 @@ public class BlockCreateFragment extends Fragment {
         mOnActivityRequest = onActivityRequest;
     }
 
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

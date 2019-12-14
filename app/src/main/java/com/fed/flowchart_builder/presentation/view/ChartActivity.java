@@ -16,7 +16,7 @@ import com.fed.flowchart_builder.presentation.flowChartViews.blocks.CycleBlockVi
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.InletBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.OperationBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
-import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLine;
+import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLineView;
 import com.fed.flowchart_builder.presentation.fragments.BlockCreateFragment;
 import com.fed.flowchart_builder.presentation.presenters.ChartContracts;
 import com.fed.flowchart_builder.presentation.presenters.ChartPresenter;
@@ -58,6 +58,7 @@ public class ChartActivity extends AppCompatActivity implements ChartContracts.V
         });
 
         mFloatingActionButton = findViewById(R.id.btn_block_create);
+        mFloatingActionButton.hide();
         mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -129,8 +130,8 @@ public class ChartActivity extends AppCompatActivity implements ChartContracts.V
                 SimpleBlockView blockView2 = (SimpleBlockView) mFlowChartViewGroup.
                         getChildAt(i + mLines.get(i).getNumBlock2());
 
-                SimpleLine.BlockSide side1 = SimpleLine.BlockSide.getBlockSide(mLines.get(i).getSide1());
-                SimpleLine.BlockSide side2 = SimpleLine.BlockSide.getBlockSide(mLines.get(i).getSide2());
+                SimpleLineView.BlockSide side1 = SimpleLineView.BlockSide.getBlockSide(mLines.get(i).getSide1());
+                SimpleLineView.BlockSide side2 = SimpleLineView.BlockSide.getBlockSide(mLines.get(i).getSide2());
 
                 mFlowChartViewGroup.getLineManager().addBlock(blockView1, side1);
                 mFlowChartViewGroup.getLineManager().addBlock(blockView2, side2);
@@ -149,8 +150,8 @@ public class ChartActivity extends AppCompatActivity implements ChartContracts.V
                 ChartBlock chartBlock = ((SimpleBlockView) mFlowChartViewGroup.getChildAt(i)).save();
                 chartBlock.setChartName(mChartName);
                 blocks.add(chartBlock);
-            } else if (mFlowChartViewGroup.getChildAt(i) instanceof SimpleLine) {
-                ChartLine chartLine = ((SimpleLine) mFlowChartViewGroup.getChildAt(i)).save();
+            } else if (mFlowChartViewGroup.getChildAt(i) instanceof SimpleLineView) {
+                ChartLine chartLine = ((SimpleLineView) mFlowChartViewGroup.getChildAt(i)).save();
                 chartLine.setChartName(mChartName);
                 lines.add(chartLine);
             }

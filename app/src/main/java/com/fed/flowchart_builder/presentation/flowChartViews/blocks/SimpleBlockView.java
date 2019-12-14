@@ -28,7 +28,7 @@ import com.fed.flowchart_builder.data.ChartRoom.ChartBlock;
 import com.fed.flowchart_builder.presentation.adapters.ColorArrayAdapter;
 import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
 import com.fed.flowchart_builder.presentation.flowChartViews.SavedStateChild;
-import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLine;
+import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLineView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +55,6 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
     private float mHeight;
     private float mStrokeWidth;
     private float mCurStrokeWidth;
-    //    private float mTextStrokeWidth;
     private int mTextColor;
     private float mIconSize;
 
@@ -241,19 +240,19 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
                         if (mIsSelected || mIsShowAddIcons) {
                             if (isInRect(mAddLineIconRectBottom, e.getX(), e.getY())) {
                                 ((FlowChartViewGroup) getParent()).getLineManager().addBlock(SimpleBlockView.this,
-                                        SimpleLine.BlockSide.BOTTOM);
+                                        SimpleLineView.BlockSide.BOTTOM);
                                 return true;
                             } else if (isInRect(mAddLineIconRectTop, e.getX(), e.getY())) {
                                 ((FlowChartViewGroup) getParent()).getLineManager().addBlock(SimpleBlockView.this,
-                                        SimpleLine.BlockSide.TOP);
+                                        SimpleLineView.BlockSide.TOP);
                                 return true;
                             } else if (isInRect(mAddLineIconRectRight, e.getX(), e.getY())) {
                                 ((FlowChartViewGroup) getParent()).getLineManager().addBlock(SimpleBlockView.this,
-                                        SimpleLine.BlockSide.RIGHT);
+                                        SimpleLineView.BlockSide.RIGHT);
                                 return true;
                             } else if (isInRect(mAddLineIconRectLeft, e.getX(), e.getY())) {
                                 ((FlowChartViewGroup) getParent()).getLineManager().addBlock(SimpleBlockView.this,
-                                        SimpleLine.BlockSide.LEFT);
+                                        SimpleLineView.BlockSide.LEFT);
                                 return true;
                             }
                         }

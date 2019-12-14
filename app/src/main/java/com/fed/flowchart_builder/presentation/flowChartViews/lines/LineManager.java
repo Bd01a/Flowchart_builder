@@ -10,13 +10,13 @@ import java.util.List;
 
 public class LineManager {
     public static final String TAG = "LineManager";
-    private List<SimpleLine> mLines;
+    private List<SimpleLineView> mLines;
 
     private Context mContext;
     private FlowChartViewGroup mViewGroup;
 
     private SimpleBlockView mBlock1;
-    private SimpleLine.BlockSide mSide1;
+    private SimpleLineView.BlockSide mSide1;
 
     private boolean mIsDrawDeleteIcons;
 
@@ -27,14 +27,14 @@ public class LineManager {
     }
 
 
-    private void addFirstBlock(SimpleBlockView block1, SimpleLine.BlockSide side1) {
+    private void addFirstBlock(SimpleBlockView block1, SimpleLineView.BlockSide side1) {
         mBlock1 = block1;
         mSide1 = side1;
     }
 
-    public void addBlock(SimpleBlockView block, SimpleLine.BlockSide side) {
+    public void addBlock(SimpleBlockView block, SimpleLineView.BlockSide side) {
         if (mBlock1 != null) {
-            SimpleLine line = new SimpleLine(mContext);
+            SimpleLineView line = new SimpleLineView(mContext);
             mLines.add(line);
             mViewGroup.addView(line, 0);
             line.findViewGroup();
@@ -49,14 +49,14 @@ public class LineManager {
     }
 
     public void update() {
-        for (SimpleLine line : mLines) {
+        for (SimpleLineView line : mLines) {
             line.update();
         }
     }
 
     public void showDeleteIcons(boolean isShow) {
         mIsDrawDeleteIcons = isShow;
-        for (SimpleLine line : mLines) {
+        for (SimpleLineView line : mLines) {
             line.isDrawDeleteIcon(isShow);
             line.invalidate();
         }
@@ -67,7 +67,7 @@ public class LineManager {
     }
 
     public void checkBlocks() {
-        for (SimpleLine line : mLines) {
+        for (SimpleLineView line : mLines) {
             line.checkBlocks();
         }
     }

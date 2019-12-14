@@ -17,4 +17,8 @@
     <string name="text_negative_button_dialog_block_settings">Отмена</string>
     <string name="text_textview_block_settings_text_size">ширина текста</string>
     <string name="text_textview_block_settings_text_color">цвет текста</string>
+
+    <string name="title_dialog_add_chart">Введите название</string>
+    <string name="text_positive_button_dialog_add_chart">Создать</string>
+    <string name="text_negative_button_dialog_add_chart">Отмена</string>
 </resources>
