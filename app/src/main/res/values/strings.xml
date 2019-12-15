@@ -5,7 +5,8 @@
     <string name="block_operation">Операция</string>
     <string name="block_condition">Условие</string>
     <string name="block_inlet">Вход/Выход</string>
-    <string name="block_cycle">Цикл</string>
+    <string name="block_begin_cycle">Начало цикла</string>
+    <string name="block_end_cycle">Конец цикла</string>
     <string name="dialog_block_settings_title">Настройки</string>
     <string name="text_textview_block_settings_text">Текст</string>
     <string name="text_textview_block_settings_width">ширина</string>
@@ -22,4 +23,5 @@
     <string name="text_positive_button_dialog_add_chart">Создать</string>
     <string name="text_negative_button_dialog_add_chart">Отмена</string>
     <string name="menu_delete">удалить</string>
+    <string name="block_function">Функция</string>
 </resources>

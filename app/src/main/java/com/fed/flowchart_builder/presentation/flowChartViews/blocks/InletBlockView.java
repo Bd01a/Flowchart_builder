@@ -33,8 +33,6 @@ public class InletBlockView extends SimpleBlockView {
         super.drawUnSelected(canvas);
         mPath.reset();
         float middleX = (getRect().right - getRect().left) / 2;
-        float middleY = (getRect().bottom - getRect().top) / 2;
-
 
         float xr = middleX + getRect().width() / 4;
         float xl = middleX - getRect().width() / 4;

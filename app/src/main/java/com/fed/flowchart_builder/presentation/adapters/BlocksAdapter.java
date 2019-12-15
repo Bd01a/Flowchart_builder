@@ -70,7 +70,7 @@ public class BlocksAdapter extends RecyclerView.Adapter<BlocksAdapter.BlockViewH
         }
 
         void bind(BlockDescription block) {
-            mIcon.setImageDrawable(mContext.getResources().getDrawable(block.getIcon()));
+            mIcon.setImageBitmap(block.getIcon(mContext));
             mTextView.setText(mContext.getString(block.getName()));
         }
 

@@ -9,14 +9,14 @@
         android:id="@+id/imageview_icon"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_gravity="center_horizontal"
         android:padding="@dimen/padding_blocks_item" />
 
     <TextView
         android:id="@+id/textview_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:gravity="center_horizontal"
         android:padding="@dimen/padding_blocks_item" />
 
 </LinearLayout>

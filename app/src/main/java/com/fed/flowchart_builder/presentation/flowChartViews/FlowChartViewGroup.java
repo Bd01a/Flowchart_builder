@@ -18,10 +18,6 @@ import android.view.WindowManager;
 import android.widget.Scroller;
 
 import com.fed.flowchart_builder.data.BlockDescription;
-import com.fed.flowchart_builder.presentation.flowChartViews.blocks.ConditionBlockView;
-import com.fed.flowchart_builder.presentation.flowChartViews.blocks.CycleBlockView;
-import com.fed.flowchart_builder.presentation.flowChartViews.blocks.InletBlockView;
-import com.fed.flowchart_builder.presentation.flowChartViews.blocks.OperationBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.lines.LineManager;
 import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLineView;
@@ -368,22 +364,13 @@ public class FlowChartViewGroup extends ViewGroup {
         mCurrentScale = ss.mCurrentScale;
 
         for (int i = 0; i < ss.mBlockType.size(); i++) {
-            if (ss.mBlockType.get(i) == BlockDescription.OPERATION_BLOCK.getId()) {
-                OperationBlockView blockView = new OperationBlockView(getContext());
-                addView(blockView);
-                blockView.restoreState(ss, i);
-            } else if (ss.mBlockType.get(i) == BlockDescription.CONDITION_BLOCK.getId()) {
-                ConditionBlockView blockView = new ConditionBlockView(getContext());
-                addView(blockView);
-                blockView.restoreState(ss, i);
-            } else if (ss.mBlockType.get(i) == BlockDescription.CYCLE_BLOCK.getId()) {
-                CycleBlockView blockView = new CycleBlockView(getContext());
-                addView(blockView);
-                blockView.restoreState(ss, i);
-            } else if (ss.mBlockType.get(i) == BlockDescription.INLET_BLOCK.getId()) {
-                InletBlockView blockView = new InletBlockView(getContext());
-                addView(blockView);
-                blockView.restoreState(ss, i);
+            BlockDescription[] blockDescriptions = BlockDescription.values();
+            for (BlockDescription description : blockDescriptions) {
+                if (ss.mBlockType.get(i) == description.getId()) {
+                    SimpleBlockView blockView = description.getBlock(getContext());
+                    addView(blockView);
+                    blockView.restoreState(ss, i);
+                }
             }
         }
         mLineManager = new LineManager(getContext(), this);

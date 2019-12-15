@@ -12,10 +12,6 @@ import com.fed.flowchart_builder.data.ChartRepository;
 import com.fed.flowchart_builder.data.ChartRoom.ChartBlock;
 import com.fed.flowchart_builder.data.ChartRoom.ChartLine;
 import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
-import com.fed.flowchart_builder.presentation.flowChartViews.blocks.ConditionBlockView;
-import com.fed.flowchart_builder.presentation.flowChartViews.blocks.CycleBlockView;
-import com.fed.flowchart_builder.presentation.flowChartViews.blocks.InletBlockView;
-import com.fed.flowchart_builder.presentation.flowChartViews.blocks.OperationBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLineView;
 import com.fed.flowchart_builder.presentation.fragments.BlockCreateFragment;
@@ -118,19 +114,29 @@ public class ChartActivity extends AppCompatActivity implements ChartContracts.V
         if (isBlocksLoaded && isLinesLoaded) {
             for (int i = 0; i < mBlocks.size(); i++) {
                 SimpleBlockView blockView = null;
-                if (mBlocks.get(i).getBlockType() == BlockDescription.OPERATION_BLOCK.getId()) {
-                    blockView = new OperationBlockView(getContext());
-                } else if (mBlocks.get(i).getBlockType() == BlockDescription.CONDITION_BLOCK.getId()) {
-                    blockView = new ConditionBlockView(getContext());
-                } else if (mBlocks.get(i).getBlockType() == BlockDescription.CYCLE_BLOCK.getId()) {
-                    blockView = new CycleBlockView(getContext());
-                } else if (mBlocks.get(i).getBlockType() == BlockDescription.INLET_BLOCK.getId()) {
-                    blockView = new InletBlockView(getContext());
+                BlockDescription[] blockDescriptions = BlockDescription.values();
+                for (BlockDescription description : blockDescriptions) {
+                    if (mBlocks.get(i).getBlockType() == description.getId()) {
+                        blockView = description.getBlock(getContext());
+                        if (blockView != null) {
+                            blockView.setAttr(mBlocks.get(i));
+                            mFlowChartViewGroup.addView(blockView);
+                        }
+                    }
                 }
-                if (blockView != null) {
-                    blockView.setAttr(mBlocks.get(i));
-                    mFlowChartViewGroup.addView(blockView);
-                }
+//                if (mBlocks.get(i).getBlockType() == BlockDescription.OPERATION_BLOCK.getId()) {
+//                    blockView = new OperationBlockView(getContext());
+//                } else if (mBlocks.get(i).getBlockType() == BlockDescription.CONDITION_BLOCK.getId()) {
+//                    blockView = new ConditionBlockView(getContext());
+//                } else if (mBlocks.get(i).getBlockType() == BlockDescription.CYCLE_BLOCK.getId()) {
+//                    blockView = new CycleBeginBlockView(getContext());
+//                } else if (mBlocks.get(i).getBlockType() == BlockDescription.INLET_BLOCK.getId()) {
+//                    blockView = new InletBlockView(getContext());
+//                }
+//                if (blockView != null) {
+//                    blockView.setAttr(mBlocks.get(i));
+//                    mFlowChartViewGroup.addView(blockView);
+//                }
 
             }
             for (int i = 0; i < mLines.size(); i++) {
