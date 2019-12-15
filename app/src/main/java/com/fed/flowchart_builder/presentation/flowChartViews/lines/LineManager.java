@@ -71,6 +71,7 @@ public class LineManager {
             line.addBlocks(mBlock1, mSide1, block, side);
             mBlock1 = null;
             mSide1 = null;
+            line.checkBlocks();
             mViewGroup.showAllAddLineIcons(false);
         } else {
             addFirstBlock(block, side);

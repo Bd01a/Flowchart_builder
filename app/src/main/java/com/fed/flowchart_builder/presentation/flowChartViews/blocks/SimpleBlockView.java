@@ -11,6 +11,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -24,7 +25,6 @@ import androidx.annotation.Nullable;
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.data.ChartRoom.ChartBlock;
 import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
-import com.fed.flowchart_builder.presentation.flowChartViews.SavedStateChild;
 import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLineView;
 import com.fed.flowchart_builder.presentation.fragments.BlockPropertyDialogFragment;
 
@@ -42,7 +42,7 @@ import com.fed.flowchart_builder.presentation.fragments.BlockPropertyDialogFragm
  * @attr ref R.styleable.SimpleBlockView_text_color
  * @attr ref R.styleable.SimpleBlockView_text
  */
-public abstract class SimpleBlockView extends View implements SavedStateChild {
+public abstract class SimpleBlockView extends View {
     private static final String TAG = "SimpleBlockViewTAG";
 
 
@@ -685,11 +685,7 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
      * @return true if point in rectangle, false if not
      */
     private boolean isInRect(RectF rect, float x, float y) {
-        float r = rect.right + mTranslation.x;
-        float l = rect.left + mTranslation.x;
-        float b = rect.bottom + mTranslation.y;
-        float t = rect.top + mTranslation.y;
-        return x > l && x < r && y < b && y > t;
+        return rect.contains(x - mTranslation.x, y - mTranslation.y);
     }
 
 
@@ -727,24 +723,25 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         }
     }
 
-    /**
-     * save own parameters for save state
-     * @param ss saved state of parent view
-     */
-    public void saveState(FlowChartViewGroup.FlowChartSavedState ss) {
 
-        ss.mColorStroke.add(mColorStroke);
-        ss.mWidth.add(mWidth);
-        ss.mHeight.add(mHeight);
-        ss.mStrokeWidth.add(mStrokeWidth);
-        ss.mTextColor.add(mTextColor);
-        ss.mPositionX.add(mPosition.x);
-        ss.mPositionY.add(mPosition.y);
+    @Nullable
+    @Override
+    public Parcelable onSaveInstanceState() {
+        Parcelable parcelable = super.onSaveInstanceState();
+        BlockSavedState ss = new BlockSavedState(parcelable);
+        ss.mColorStroke = mColorStroke;
+        ss.mWidth = mWidth;
+        ss.mHeight = mHeight;
+        ss.mStrokeWidth = mStrokeWidth;
+        ss.mTextColor = mTextColor;
+        ss.mPositionX = mPosition.x;
+        ss.mPositionY = mPosition.y;
 
-        ss.mBlockType.add(getSelfType());
+        ss.mBlockType = getSelfType();
 
-        ss.mText.add(mText);
-        ss.mTextSize.add(mTextSize);
+        ss.mText = mText;
+        ss.mTextSize = mTextSize;
+        return ss;
     }
 
     /**
@@ -774,20 +771,19 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
     abstract int getSelfType();
 
 
-    /**
-     * @param ss saved state of parent view
-     * @param index index in lists in saved state
-     */
-    public void restoreState(FlowChartViewGroup.FlowChartSavedState ss, int index) {
-        mColorStroke = ss.mColorStroke.get(index);
-        mWidth = ss.mWidth.get(index);
-        mHeight = ss.mHeight.get(index);
-        mStrokeWidth = ss.mStrokeWidth.get(index);
-        mTextColor = ss.mTextColor.get(index);
-        mPosition.x = ss.mPositionX.get(index);
-        mPosition.y = ss.mPositionY.get(index);
-        mText = ss.mText.get(index);
-        mTextSize = ss.mTextSize.get(index);
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        super.onRestoreInstanceState(state);
+        BlockSavedState ss = (BlockSavedState) state;
+        mColorStroke = ss.mColorStroke;
+        mWidth = ss.mWidth;
+        mHeight = ss.mHeight;
+        mStrokeWidth = ss.mStrokeWidth;
+        mTextColor = ss.mTextColor;
+        mPosition.x = ss.mPositionX;
+        mPosition.y = ss.mPositionY;
+        mText = ss.mText;
+        mTextSize = ss.mTextSize;
     }
 
     /**
@@ -813,5 +809,78 @@ public abstract class SimpleBlockView extends View implements SavedStateChild {
         RESIZE
     }
 
+
+    public static class BlockSavedState extends BaseSavedState {
+
+
+        public static final ClassLoaderCreator<BlockSavedState> CREATOR
+                = new ClassLoaderCreator<BlockSavedState>() {
+            @Override
+            public BlockSavedState createFromParcel(Parcel source, ClassLoader loader) {
+                return new BlockSavedState(source, loader);
+            }
+
+            @Override
+            public BlockSavedState createFromParcel(Parcel source) {
+                return createFromParcel(source, null);
+            }
+
+            public BlockSavedState[] newArray(int size) {
+                return new BlockSavedState[size];
+            }
+        };
+        float mWidth;
+        float mHeight;
+        float mStrokeWidth;
+        float mTextSize;
+        int mColorStroke;
+        int mTextColor;
+        int mPositionX;
+        int mPositionY;
+        int mBlockType;
+        String mText;
+
+        BlockSavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        @SuppressWarnings("unchecked")
+        private BlockSavedState(Parcel in, ClassLoader classLoader) {
+            super(in);
+
+            mWidth = in.readFloat();
+            mHeight = in.readFloat();
+            mStrokeWidth = in.readFloat();
+            mTextSize = in.readFloat();
+            mColorStroke = in.readInt();
+            mTextColor = in.readInt();
+            mPositionX = in.readInt();
+            mPositionY = in.readInt();
+            mBlockType = in.readInt();
+            mText = in.readString();
+
+        }
+
+        public int getBlockType() {
+            return mBlockType;
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+
+            out.writeFloat(mWidth);
+            out.writeFloat(mHeight);
+            out.writeFloat(mStrokeWidth);
+            out.writeFloat(mTextSize);
+            out.writeInt(mColorStroke);
+            out.writeInt(mTextColor);
+            out.writeInt(mPositionX);
+            out.writeInt(mPositionY);
+            out.writeInt(mBlockType);
+            out.writeString(mText);
+
+        }
+    }
 
 }

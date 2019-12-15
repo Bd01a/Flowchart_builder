@@ -24,6 +24,7 @@ import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLineVie
 import com.fed.flowchart_builder.presentation.fragments.BlockPropertyDialogFragment;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -341,8 +342,12 @@ public class FlowChartViewGroup extends ViewGroup {
         ss.mCurrentScale = mCurrentScale;
 
         for (int i = 0; i < getChildCount(); i++) {
-            if (getChildAt(i) instanceof SavedStateChild) {
-                ((SavedStateChild) getChildAt(i)).saveState(ss);
+            if (getChildAt(i) instanceof SimpleBlockView) {
+                Parcelable parcelable = ((SimpleBlockView) getChildAt(i)).onSaveInstanceState();
+                ss.mBlocks.add(parcelable);
+            } else if (getChildAt(i) instanceof SimpleLineView) {
+                Parcelable parcelable = ((SimpleLineView) getChildAt(i)).onSaveInstanceState();
+                ss.mLines.add(parcelable);
             }
 
         }
@@ -363,23 +368,25 @@ public class FlowChartViewGroup extends ViewGroup {
         scrollTo(ss.mScrollX - (displaySize.x - displaySize.y) / 2, ss.mScrollY - (displaySize.y - displaySize.x) / 2);
         mCurrentScale = ss.mCurrentScale;
 
-        for (int i = 0; i < ss.mBlockType.size(); i++) {
+        for (int i = 0; i < ss.mBlocks.size(); i++) {
             BlockDescription[] blockDescriptions = BlockDescription.values();
             for (BlockDescription description : blockDescriptions) {
-                if (ss.mBlockType.get(i) == description.getId()) {
+                SimpleBlockView.BlockSavedState savedState = (SimpleBlockView.BlockSavedState) ss.mBlocks.get(i);
+                if (savedState.getBlockType() == description.getId()) {
                     SimpleBlockView blockView = description.getBlock(getContext());
                     addView(blockView);
-                    blockView.restoreState(ss, i);
+                    blockView.onRestoreInstanceState(savedState);
                 }
             }
         }
         mLineManager = new LineManager(getContext(), this);
-        for (int i = 0; i < ss.mSide1.size(); i++) {
-            SimpleBlockView blockView1 = (SimpleBlockView) getChildAt(i + ss.mNumBlock1.get(i));
-            SimpleBlockView blockView2 = (SimpleBlockView) getChildAt(i + ss.mNumBlock2.get(i));
+        for (int i = 0; i < ss.mLines.size(); i++) {
+            SimpleLineView.LineSavedState savedState = (SimpleLineView.LineSavedState) ss.mLines.get(i);
+            SimpleBlockView blockView1 = (SimpleBlockView) getChildAt(i + savedState.getNumBlock1());
+            SimpleBlockView blockView2 = (SimpleBlockView) getChildAt(i + savedState.getNumBlock2());
 
-            SimpleLineView.BlockSide side1 = ss.mSide1.get(i);
-            SimpleLineView.BlockSide side2 = ss.mSide2.get(i);
+            SimpleLineView.BlockSide side1 = SimpleLineView.BlockSide.getBlockSide(savedState.getSide1());
+            SimpleLineView.BlockSide side2 = SimpleLineView.BlockSide.getBlockSide(savedState.getSide2());
 
             mLineManager.addBlock(blockView1, side1);
             mLineManager.addBlock(blockView2, side2);
@@ -406,25 +413,12 @@ public class FlowChartViewGroup extends ViewGroup {
     public static class FlowChartSavedState extends BaseSavedState {
 
 
-        public ArrayList<Float> mWidth = new ArrayList<>();
-        public ArrayList<Float> mHeight = new ArrayList<>();
-        public ArrayList<Float> mStrokeWidth = new ArrayList<>();
-        public ArrayList<Float> mTextSize = new ArrayList<>();
-        public ArrayList<Integer> mColorStroke = new ArrayList<>();
-        public ArrayList<Integer> mTextColor = new ArrayList<>();
-        public ArrayList<Integer> mPositionX = new ArrayList<>();
-        public ArrayList<Integer> mPositionY = new ArrayList<>();
-        public ArrayList<Integer> mBlockType = new ArrayList<>();
-        public ArrayList<String> mText = new ArrayList<>();
-
-        public ArrayList<Integer> mNumBlock1 = new ArrayList<>();
-        public ArrayList<Integer> mNumBlock2 = new ArrayList<>();
-        public ArrayList<SimpleLineView.BlockSide> mSide1 = new ArrayList<>();
-        public ArrayList<SimpleLineView.BlockSide> mSide2 = new ArrayList<>();
-
         int mScrollX;
         int mScrollY;
         float mCurrentScale;
+
+        List<Parcelable> mBlocks = new ArrayList<>();
+        List<Parcelable> mLines = new ArrayList<>();
 
 
         FlowChartSavedState(Parcelable superState) {
@@ -438,21 +432,10 @@ public class FlowChartViewGroup extends ViewGroup {
             mScrollY = in.readInt();
             mCurrentScale = in.readFloat();
 
-            mWidth = in.readArrayList(getClass().getClassLoader());
-            mHeight = in.readArrayList(getClass().getClassLoader());
-            mStrokeWidth = in.readArrayList(getClass().getClassLoader());
-            mTextSize = in.readArrayList(getClass().getClassLoader());
-            mColorStroke = in.readArrayList(getClass().getClassLoader());
-            mTextColor = in.readArrayList(getClass().getClassLoader());
-            mPositionX = in.readArrayList(getClass().getClassLoader());
-            mPositionY = in.readArrayList(getClass().getClassLoader());
-            mBlockType = in.readArrayList(getClass().getClassLoader());
-            mText = in.readArrayList(getClass().getClassLoader());
+            mBlocks = in.readArrayList(getClass().getClassLoader());
+            mLines = in.readArrayList(getClass().getClassLoader());
 
-            mNumBlock1 = in.readArrayList(getClass().getClassLoader());
-            mNumBlock2 = in.readArrayList(getClass().getClassLoader());
-            mSide1 = in.readArrayList(getClass().getClassLoader());
-            mSide2 = in.readArrayList(getClass().getClassLoader());
+
         }
 
         @Override
@@ -463,21 +446,8 @@ public class FlowChartViewGroup extends ViewGroup {
             out.writeInt(mScrollY);
             out.writeFloat(mCurrentScale);
 
-            out.writeList(mWidth);
-            out.writeList(mHeight);
-            out.writeList(mStrokeWidth);
-            out.writeList(mTextSize);
-            out.writeList(mColorStroke);
-            out.writeList(mTextColor);
-            out.writeList(mPositionX);
-            out.writeList(mPositionY);
-            out.writeList(mBlockType);
-            out.writeList(mText);
-
-            out.writeList(mNumBlock1);
-            out.writeList(mNumBlock2);
-            out.writeList(mSide1);
-            out.writeList(mSide2);
+            out.writeList(mBlocks);
+            out.writeList(mLines);
 
         }
 

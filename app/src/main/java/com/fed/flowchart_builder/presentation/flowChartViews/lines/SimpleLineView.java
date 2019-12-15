@@ -9,6 +9,8 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -20,7 +22,6 @@ import androidx.annotation.Nullable;
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.data.ChartRoom.ChartLine;
 import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
-import com.fed.flowchart_builder.presentation.flowChartViews.SavedStateChild;
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ import java.util.List;
  * @author Sergey Fedorov
  */
 
-public class SimpleLineView extends View implements SavedStateChild {
+public class SimpleLineView extends View {
 
     private static final String TAG = "SimpleLine";
 
@@ -280,11 +281,7 @@ public class SimpleLineView extends View implements SavedStateChild {
      * @return true if point in rectangle, false if not
      */
     private boolean isInRect(@NonNull RectF rect, float x, float y) {
-        float r = rect.right + mTranslation.x;
-        float l = rect.left + mTranslation.x;
-        float b = rect.bottom + mTranslation.y;
-        float t = rect.top + mTranslation.y;
-        return x > l && x < r && y < b && y > t;
+        return rect.contains(x - mTranslation.x, y - mTranslation.y);
     }
 
 
@@ -1472,18 +1469,17 @@ public class SimpleLineView extends View implements SavedStateChild {
     }
 
 
-    /**
-     * save own parameters for save state
-     * @param ss saved state of parent view
-     */
-    public void saveState(FlowChartViewGroup.FlowChartSavedState ss) {
-        ss.mNumBlock1.add(mViewGroup.getNumberBlockChild(mBlock1));
-        ss.mNumBlock2.add(mViewGroup.getNumberBlockChild(mBlock2));
-        ss.mSide1.add(mSide1);
-        ss.mSide2.add(mSide2);
-
+    @Nullable
+    @Override
+    public Parcelable onSaveInstanceState() {
+        Parcelable parcelable = super.onSaveInstanceState();
+        LineSavedState ss = new LineSavedState(parcelable);
+        ss.mNumBlock1 = mViewGroup.getNumberBlockChild(mBlock1);
+        ss.mNumBlock2 = mViewGroup.getNumberBlockChild(mBlock2);
+        ss.mSide1 = mSide1.getNum();
+        ss.mSide2 = mSide2.getNum();
+        return ss;
     }
-
 
     /**
      * This object can be equal: {@link BlockSide#LEFT}, {@link BlockSide#RIGHT},
@@ -1521,4 +1517,69 @@ public class SimpleLineView extends View implements SavedStateChild {
         }
     }
 
+    public static class LineSavedState extends BaseSavedState {
+
+
+        public static final ClassLoaderCreator<LineSavedState> CREATOR
+                = new ClassLoaderCreator<LineSavedState>() {
+            @Override
+            public LineSavedState createFromParcel(Parcel source, ClassLoader loader) {
+                return new LineSavedState(source, loader);
+            }
+
+            @Override
+            public LineSavedState createFromParcel(Parcel source) {
+                return createFromParcel(source, null);
+            }
+
+            public LineSavedState[] newArray(int size) {
+                return new LineSavedState[size];
+            }
+        };
+        int mNumBlock1;
+        int mNumBlock2;
+        int mSide1;
+        int mSide2;
+
+        LineSavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        @SuppressWarnings("unchecked")
+        private LineSavedState(Parcel in, ClassLoader classLoader) {
+            super(in);
+
+            mNumBlock1 = in.readInt();
+            mNumBlock2 = in.readInt();
+            mSide1 = in.readInt();
+            mSide2 = in.readInt();
+        }
+
+        public int getNumBlock1() {
+            return mNumBlock1;
+        }
+
+        public int getNumBlock2() {
+            return mNumBlock2;
+        }
+
+        public int getSide1() {
+            return mSide1;
+        }
+
+        public int getSide2() {
+            return mSide2;
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+
+            out.writeInt(mNumBlock1);
+            out.writeInt(mNumBlock2);
+            out.writeInt(mSide1);
+            out.writeInt(mSide2);
+
+        }
+    }
 }
