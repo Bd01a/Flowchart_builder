@@ -1,5 +1,6 @@
 package com.fed.flowchart_builder.presentation.presenters;
 
+import com.fed.flowchart_builder.data.ChartLiveData;
 import com.fed.flowchart_builder.data.ChartRepository;
 import com.fed.flowchart_builder.presentation.view.MainActivity;
 
@@ -10,23 +11,17 @@ public class MainPresenter {
     private MainActivity mView;
     private ChartRepository mRepository;
 
-    public MainPresenter(MainActivity view, ChartRepository repository) {
+    public MainPresenter(MainActivity view) {
         mView = view;
-        mRepository = repository;
-        mRepository.setMainContract(new ChartRepository.RepositoryMainPresenterContract() {
-            @Override
-            public void getChartNamesIsCompleted(List<String> names) {
-                mView.loadingChartNamesIsCompleted(names);
-            }
-        });
+        mRepository = ChartRepository.getChartRepository(view.getApplicationContext());
     }
 
     public void deleteAllByChartName(String chartName) {
         mRepository.deleteAllByChartName(chartName);
     }
 
-    public void loadChartNames() {
-        mRepository.getChartNames();
+    public void loadChartNames(ChartLiveData<List<String>> liveData) {
+        mRepository.getChartNames(liveData);
     }
 
 
@@ -34,7 +29,7 @@ public class MainPresenter {
 
     }
 
-//    public void chartIsLoaded(){
+//    private void chartIsLoaded(){
 //        if (isBlocksLoaded && isLinesLoaded) {
 //            for (int i = 0; i < mBlocks.size(); i++) {
 //                SimpleBlockView blockView = null;

@@ -10,7 +10,6 @@ import androidx.lifecycle.Observer;
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.data.BlockDescription;
 import com.fed.flowchart_builder.data.ChartLiveData;
-import com.fed.flowchart_builder.data.ChartRepository;
 import com.fed.flowchart_builder.data.ChartRoom.ChartBlock;
 import com.fed.flowchart_builder.data.ChartRoom.ChartLine;
 import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
@@ -39,7 +38,7 @@ public class ChartActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chart);
-        mPresenter = new ChartPresenter(this, ChartRepository.getChartRepository(getContext()));
+        mPresenter = new ChartPresenter(this);
         mChartName = getIntent().getStringExtra(MainActivity.CHART_NAME);
         mFlowChartViewGroup = findViewById(R.id.flowchart_view_group);
         mFlowChartViewGroup.setStartDialogContract(new FlowChartViewGroup.StartDialogContract() {
@@ -51,15 +50,22 @@ public class ChartActivity extends AppCompatActivity {
         });
 
         if (savedInstanceState == null) {
-            mPresenter.loadBlocksByChartName(mChartName);
-            ChartLiveData<List<ChartLine>> liveData = new ChartLiveData<>();
-            liveData.observe(this, new Observer<List<ChartLine>>() {
+            ChartLiveData<List<ChartBlock>> blocksLiveData = new ChartLiveData<>();
+            blocksLiveData.observe(this, new Observer<List<ChartBlock>>() {
+                @Override
+                public void onChanged(List<ChartBlock> blocks) {
+                    loadingBlockByChartNameIsCompleted(blocks);
+                }
+            });
+            mPresenter.loadBlocksByChartName(blocksLiveData, mChartName);
+            ChartLiveData<List<ChartLine>> linesLiveData = new ChartLiveData<>();
+            linesLiveData.observe(this, new Observer<List<ChartLine>>() {
                 @Override
                 public void onChanged(List<ChartLine> lines) {
                     loadingLinesByChartNameIsCompleted(lines);
                 }
             });
-            mPresenter.loadLinesByChartName(liveData, mChartName);
+            mPresenter.loadLinesByChartName(linesLiveData, mChartName);
             mFlowChartViewGroup.setVisibility(View.INVISIBLE);
         }
 

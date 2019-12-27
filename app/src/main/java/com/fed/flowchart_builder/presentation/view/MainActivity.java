@@ -17,12 +17,13 @@ import android.widget.PopupMenu;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.fed.flowchart_builder.ChartProvider;
 import com.fed.flowchart_builder.R;
-import com.fed.flowchart_builder.data.ChartRepository;
+import com.fed.flowchart_builder.data.ChartLiveData;
 import com.fed.flowchart_builder.presentation.adapters.ChartsAdapter;
 import com.fed.flowchart_builder.presentation.fragments.AddChartDialogFragment;
 import com.fed.flowchart_builder.presentation.presenters.MainPresenter;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mPresenter = new MainPresenter(this, ChartRepository.getChartRepository(getContext()));
+        mPresenter = new MainPresenter(this);
 
 
         StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
@@ -97,7 +98,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mPresenter.loadChartNames();
+        ChartLiveData<List<String>> liveData = new ChartLiveData<>();
+        liveData.observe(this, new Observer<List<String>>() {
+            @Override
+            public void onChanged(List<String> strings) {
+                loadingChartNamesIsCompleted(strings);
+            }
+        });
+        mPresenter.loadChartNames(liveData);
     }
 
 
@@ -139,7 +147,14 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()) {
                     case R.id.item_delete:
                         mPresenter.deleteAllByChartName(chartName);
-                        mPresenter.loadChartNames();
+                        ChartLiveData<List<String>> liveData = new ChartLiveData<>();
+                        liveData.observe(MainActivity.this, new Observer<List<String>>() {
+                            @Override
+                            public void onChanged(List<String> strings) {
+                                loadingChartNamesIsCompleted(strings);
+                            }
+                        });
+                        mPresenter.loadChartNames(liveData);
                         return true;
                     case R.id.item_share:
                         mPresenter.prepareChartToShare(chartName);

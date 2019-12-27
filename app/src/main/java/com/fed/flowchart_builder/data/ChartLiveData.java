@@ -7,4 +7,9 @@ public class ChartLiveData<T> extends LiveData<T> {
     protected void postValue(T value) {
         super.postValue(value);
     }
+
+    @Override
+    protected void setValue(T value) {
+        super.setValue(value);
+    }
 }

@@ -13,26 +13,14 @@ public class ChartPresenter {
     private ChartRepository mRepository;
     private ChartActivity mView;
 
-    public ChartPresenter(ChartActivity view, ChartRepository chartRepository) {
+    public ChartPresenter(ChartActivity view) {
         mView = view;
-        mRepository = chartRepository;
-        mRepository.setChartContract(new ChartRepository.RepositoryChartPresenterContract() {
-            @Override
-            public void getBlocksByChartNameIsCompleted(List<ChartBlock> blocks) {
-                mView.loadingBlockByChartNameIsCompleted(blocks);
-            }
-
-            @Override
-            public void getLinesByChartNameIsCompleted(List<ChartLine> lines) {
-//                mView.loadingLinesByChartNameIsCompleted(lines);
-            }
-
-        });
+        mRepository = ChartRepository.getChartRepository(view.getApplicationContext());
     }
 
 
-    public void loadBlocksByChartName(String chartName) {
-        mRepository.getBlocksByChartName(chartName);
+    public void loadBlocksByChartName(ChartLiveData<List<ChartBlock>> liveData, String chartName) {
+        mRepository.getBlocksByChartName(liveData, chartName);
     }
 
 
