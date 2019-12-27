@@ -150,6 +150,11 @@ public abstract class SimpleBlockView extends View {
      */
     private float mTextSize;
 
+    /**
+     * used for transformations of {@link SimpleBlockView#mText} with lack of space
+     */
+    private StringBuilder mCurText = new StringBuilder();
+
 
     /**
      * {@link SimpleBlockView#mTextSize}  with considering scaling
@@ -575,7 +580,7 @@ public abstract class SimpleBlockView extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.translate(mTranslation.x, mTranslation.y);
         drawUnSelected(canvas);
@@ -633,7 +638,7 @@ public abstract class SimpleBlockView extends View {
      * needs to overrides for childs
      */
     public void drawUnSelected(Canvas canvas) {
-        StringBuilder mCurText = new StringBuilder(mText);
+        mCurText.append(mText);
         float textWidth = mTextPaint.measureText(mCurText.toString());
         while (textWidth >= mRect.width() && mCurText.length() > 1) {
             mCurText.delete(0, 1);

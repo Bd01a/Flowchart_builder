@@ -30,6 +30,7 @@ public class OperationBlockView extends SimpleBlockView {
 
     }
 
+
     @Override
     int getSelfType() {
         return BlockDescription.OPERATION_BLOCK.getId();

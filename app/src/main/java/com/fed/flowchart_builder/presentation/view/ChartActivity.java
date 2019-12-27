@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.data.BlockDescription;
+import com.fed.flowchart_builder.data.ChartLiveData;
 import com.fed.flowchart_builder.data.ChartRepository;
 import com.fed.flowchart_builder.data.ChartRoom.ChartBlock;
 import com.fed.flowchart_builder.data.ChartRoom.ChartLine;
@@ -16,14 +18,13 @@ import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockV
 import com.fed.flowchart_builder.presentation.flowChartViews.lines.SimpleLineView;
 import com.fed.flowchart_builder.presentation.fragments.BlockCreateFragment;
 import com.fed.flowchart_builder.presentation.fragments.BlockPropertyDialogFragment;
-import com.fed.flowchart_builder.presentation.presenters.ChartContracts;
 import com.fed.flowchart_builder.presentation.presenters.ChartPresenter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChartActivity extends AppCompatActivity implements ChartContracts.View {
+public class ChartActivity extends AppCompatActivity {
 
     boolean isBlocksLoaded;
     boolean isLinesLoaded;
@@ -51,7 +52,14 @@ public class ChartActivity extends AppCompatActivity implements ChartContracts.V
 
         if (savedInstanceState == null) {
             mPresenter.loadBlocksByChartName(mChartName);
-            mPresenter.loadLinesByChartName(mChartName);
+            ChartLiveData<List<ChartLine>> liveData = new ChartLiveData<>();
+            liveData.observe(this, new Observer<List<ChartLine>>() {
+                @Override
+                public void onChanged(List<ChartLine> lines) {
+                    loadingLinesByChartNameIsCompleted(lines);
+                }
+            });
+            mPresenter.loadLinesByChartName(liveData, mChartName);
             mFlowChartViewGroup.setVisibility(View.INVISIBLE);
         }
 
@@ -91,21 +99,21 @@ public class ChartActivity extends AppCompatActivity implements ChartContracts.V
         mFloatingActionButton.show();
     }
 
-    @Override
+
     public void loadingBlockByChartNameIsCompleted(List<ChartBlock> blocks) {
         isBlocksLoaded = true;
         mBlocks = blocks;
         endLoading();
     }
 
-    @Override
-    public void loadingLinesByChartNameIsCompleted(List<ChartLine> lines) {
+
+    private void loadingLinesByChartNameIsCompleted(List<ChartLine> lines) {
         isLinesLoaded = true;
         mLines = lines;
         endLoading();
     }
 
-    @Override
+
     public Context getContext() {
         return this;
     }

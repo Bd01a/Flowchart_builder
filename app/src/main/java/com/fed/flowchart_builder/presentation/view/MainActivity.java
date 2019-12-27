@@ -1,9 +1,16 @@
 package com.fed.flowchart_builder.presentation.view;
 
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
+import android.os.StrictMode;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
@@ -13,19 +20,24 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.fed.flowchart_builder.ChartProvider;
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.data.ChartRepository;
 import com.fed.flowchart_builder.presentation.adapters.ChartsAdapter;
 import com.fed.flowchart_builder.presentation.fragments.AddChartDialogFragment;
-import com.fed.flowchart_builder.presentation.presenters.MainContracts;
 import com.fed.flowchart_builder.presentation.presenters.MainPresenter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements MainContracts.View {
+public class MainActivity extends AppCompatActivity {
     public static final String TAG = "ChartActivity";
     public static final String CHART_NAME = "chart_name";
+    private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 4801;
 
     RecyclerView mRecyclerView;
     FloatingActionButton mFloatingButton;
@@ -37,6 +49,15 @@ public class MainActivity extends AppCompatActivity implements MainContracts.Vie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mPresenter = new MainPresenter(this, ChartRepository.getChartRepository(getContext()));
+
+
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                .detectDiskReads()
+                .detectDiskWrites()
+                .penaltyDialog()
+                .build());
+
+
         mRecyclerView = findViewById(R.id.recyclerview_charts);
         mFloatingButton = findViewById(R.id.floating_button_add_chart);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -79,12 +100,12 @@ public class MainActivity extends AppCompatActivity implements MainContracts.Vie
         mPresenter.loadChartNames();
     }
 
-    @Override
+
     public Context getContext() {
         return getApplicationContext();
     }
 
-    @Override
+
     public void loadingChartNamesIsCompleted(List<String> names) {
         ChartsAdapter adapter = new ChartsAdapter(names);
         adapter.setOnItemClickListener(new ChartsAdapter.OnItemClickListener() {
@@ -115,16 +136,63 @@ public class MainActivity extends AppCompatActivity implements MainContracts.Vie
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.item_delete) {
-
-                    mPresenter.deleteAllByChartName(chartName);
-                    mPresenter.loadChartNames();
-                    return true;
+                switch (item.getItemId()) {
+                    case R.id.item_delete:
+                        mPresenter.deleteAllByChartName(chartName);
+                        mPresenter.loadChartNames();
+                        return true;
+                    case R.id.item_share:
+                        mPresenter.prepareChartToShare(chartName);
+                        return true;
                 }
                 return false;
             }
         });
         popupMenu.show();
     }
+
+
+    public void shareChart(String chartName) {
+
+
+        Bitmap bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(10);
+        paint.setAntiAlias(true);
+        canvas.drawLine(0, 0, 200, 200, paint);
+
+        String fileName = "fileName.png";
+        File imageFileToShare = new File(getFilesDir(), fileName);
+
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(imageFileToShare);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 50, out);
+            out.flush();
+            out.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Uri uri = ChartProvider.getUriForFile(this, "com.fed.chartprovider", imageFileToShare);
+
+        Intent share = new Intent(Intent.ACTION_SEND);
+
+        share.setDataAndType(uri, this.getContentResolver().getType(uri));
+        share.putExtra(Intent.EXTRA_STREAM, uri);
+        share.setClipData(ClipData.newUri(getContentResolver(), getString(R.string.app_name), uri));
+        share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        startActivity(share);
+
+    }
+
 
 }

@@ -24,4 +24,7 @@
     <string name="text_negative_button_dialog_add_chart">Отмена</string>
     <string name="menu_delete">удалить</string>
     <string name="block_function">Функция</string>
+    <string name="menu_share">поделиться</string>
+
+    <string name="need_permission_write_external_storage">нужно разрешение на доступ к памяти устройства</string>
 </resources>

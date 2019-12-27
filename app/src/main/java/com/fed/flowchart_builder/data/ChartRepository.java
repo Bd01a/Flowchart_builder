@@ -11,6 +11,8 @@ import com.fed.flowchart_builder.data.ChartRoom.ChartDatabase;
 import com.fed.flowchart_builder.data.ChartRoom.ChartLine;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ChartRepository {
 
@@ -18,6 +20,9 @@ public class ChartRepository {
     private ChartDatabase mDb;
     private RepositoryMainPresenterContract mMainContract;
     private RepositoryChartPresenterContract mChartContract;
+
+    private ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
+
 
     private ChartRepository(Context context) {
         context = context.getApplicationContext();
@@ -64,9 +69,13 @@ public class ChartRepository {
     }
 
 
-    public void getLinesByChartName(String chartName) {
-        GetLinesByChartNameAsync getLinesByChartNameAsync = new GetLinesByChartNameAsync();
-        getLinesByChartNameAsync.execute(chartName);
+//    public void getLinesByChartName(String chartName) {
+//        GetLinesByChartNameAsync getLinesByChartNameAsync = new GetLinesByChartNameAsync();
+//        getLinesByChartNameAsync.execute(chartName);
+//    }
+
+    public void getLinesByChartName(ChartLiveData<List<ChartLine>> liveData, String chartName) {
+        mExecutorService.submit(new GetLinesByChartName(liveData, chartName));
     }
 
 
@@ -74,6 +83,7 @@ public class ChartRepository {
         GetChartNamesAsync getChartNamesAsync = new GetChartNamesAsync();
         getChartNamesAsync.execute();
     }
+
 
 
     public interface RepositoryMainPresenterContract {
@@ -86,19 +96,39 @@ public class ChartRepository {
         void getLinesByChartNameIsCompleted(List<ChartLine> lines);
     }
 
-    class GetLinesByChartNameAsync extends AsyncTask<String, Void, List<ChartLine>> {
 
-        @Override
-        protected List<ChartLine> doInBackground(String... strings) {
-            return mDb.getLineDao().getLinesByChartName(strings[0]);
+    class GetLinesByChartName implements Runnable {
+
+        private ChartLiveData<List<ChartLine>> mLinesLiveData;
+        private String mChartName;
+
+        GetLinesByChartName(ChartLiveData<List<ChartLine>> linesLiveData, String chartName) {
+            mLinesLiveData = linesLiveData;
+            mChartName = chartName;
         }
 
         @Override
-        protected void onPostExecute(List<ChartLine> lines) {
-            super.onPostExecute(lines);
-            mChartContract.getLinesByChartNameIsCompleted(lines);
+        public void run() {
+            List<ChartLine> lines = mDb.getLineDao().getLinesByChartName(mChartName);
+            mLinesLiveData.postValue(lines);
         }
     }
+
+
+//
+//    class GetLinesByChartNameAsync extends AsyncTask<String, Void, List<ChartLine>> {
+//
+//        @Override
+//        protected List<ChartLine> doInBackground(String... strings) {
+//            return mDb.getLineDao().getLinesByChartName(strings[0]);
+//        }
+//
+//        @Override
+//        protected void onPostExecute(List<ChartLine> lines) {
+//            super.onPostExecute(lines);
+//            mChartContract.getLinesByChartNameIsCompleted(lines);
+//        }
+//    }
 
     class GetBlocksByChartNameAsync extends AsyncTask<String, Void, List<ChartBlock>> {
 

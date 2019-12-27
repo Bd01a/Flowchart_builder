@@ -7,6 +7,7 @@ import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -220,6 +221,7 @@ public class FlowChartViewGroup extends ViewGroup {
                             distanceY = -e2.getY() + mDownPosition.y;
 
                         }
+                        Log.d("qwer", "onScroll: ");
                         scrollBy((int) distanceX, (int) distanceY);
                         return true;
                     }
@@ -237,7 +239,7 @@ public class FlowChartViewGroup extends ViewGroup {
                                 mBorderViewGroup.left, mBorderViewGroup.right,
                                 mBorderViewGroup.top, mBorderViewGroup.bottom
                         );
-
+                        Log.d("qwer", "onFling: ");
                         return true;
                     }
 
