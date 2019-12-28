@@ -4,13 +4,9 @@ import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
-import android.os.StrictMode;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
@@ -30,7 +26,6 @@ import com.fed.flowchart_builder.presentation.presenters.MainPresenter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -52,11 +47,11 @@ public class MainActivity extends AppCompatActivity {
         mPresenter = new MainPresenter(this);
 
 
-        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-                .detectDiskReads()
-                .detectDiskWrites()
-                .penaltyDialog()
-                .build());
+//        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+//                .detectDiskReads()
+//                .detectDiskWrites()
+//                .penaltyDialog()
+//                .build());
 
 
         mRecyclerView = findViewById(R.id.recyclerview_charts);
@@ -167,18 +162,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void shareChart(String chartName) {
-
-
-        Bitmap bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-
-        Paint paint = new Paint();
-        paint.setColor(Color.BLACK);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(10);
-        paint.setAntiAlias(true);
-        canvas.drawLine(0, 0, 200, 200, paint);
+    public void shareChart(Bitmap bitmap) {
 
         String fileName = "fileName.png";
         File imageFileToShare = new File(getFilesDir(), fileName);
@@ -186,12 +170,10 @@ public class MainActivity extends AppCompatActivity {
         FileOutputStream out = null;
         try {
             out = new FileOutputStream(imageFileToShare);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 50, out);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
             out.flush();
             out.close();
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

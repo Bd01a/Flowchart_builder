@@ -1,6 +1,7 @@
 package com.fed.flowchart_builder.presentation.flowChartViews;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -167,6 +168,14 @@ public class FlowChartViewGroup extends ViewGroup {
         return retVal || super.onTouchEvent(event);
     }
 
+
+    /**
+     * need to create bitmap
+     */
+    @Override
+    public void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+    }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {

@@ -535,7 +535,7 @@ public abstract class SimpleBlockView extends View {
         mTextPaint = new Paint();
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextSize(mCurTextSize);
-        mTextPaint.setStyle(Paint.Style.STROKE);
+        mTextPaint.setStyle(Paint.Style.FILL);
         mTextPaint.setColor(mTextColor);
     }
 
@@ -654,6 +654,7 @@ public abstract class SimpleBlockView extends View {
         float textX = mRect.centerX() - textWidth / 2;
         float textY = mRect.centerY() - (mTextPaint.ascent() + mTextPaint.descent()) / 2;
         canvas.drawText(mCurText.toString(), textX, textY, mTextPaint);
+        mCurText.delete(0, mCurText.length());
     }
 
 

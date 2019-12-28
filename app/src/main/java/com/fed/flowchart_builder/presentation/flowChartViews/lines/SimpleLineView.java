@@ -1275,7 +1275,7 @@ public class SimpleLineView extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         float scale = mViewGroup.getCurrentScale();
         mTranslation.x = -getLineX() + (mStrokeWidth / 2) * scale;

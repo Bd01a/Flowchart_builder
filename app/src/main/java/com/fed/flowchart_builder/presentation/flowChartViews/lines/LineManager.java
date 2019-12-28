@@ -111,4 +111,32 @@ public class LineManager {
             line.checkBlocks();
         }
     }
+
+    public float determineLeft(float l) {
+        for (SimpleLineView line : mLines) {
+            l = Math.min(l, line.getLineX());
+        }
+        return l;
+    }
+
+    public float determineRight(float r) {
+        for (SimpleLineView line : mLines) {
+            r = Math.max(r, line.getLineX() + line.getLineWidth());
+        }
+        return r;
+    }
+
+    public float determineTop(float t) {
+        for (SimpleLineView line : mLines) {
+            t = Math.min(t, line.getLineY());
+        }
+        return t;
+    }
+
+    public float determineBottom(float b) {
+        for (SimpleLineView line : mLines) {
+            b = Math.max(b, line.getLineY() + line.getLineHeight());
+        }
+        return b;
+    }
 }
