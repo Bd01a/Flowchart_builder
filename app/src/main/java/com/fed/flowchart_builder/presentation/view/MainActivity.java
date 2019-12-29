@@ -162,9 +162,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void shareChart(Bitmap bitmap) {
+    public void shareChart(Bitmap bitmap, String chartName) {
 
-        String fileName = "fileName.png";
+        String fileName = chartName.replaceAll(" ", "") + ".png";
         File imageFileToShare = new File(getFilesDir(), fileName);
 
         FileOutputStream out = null;

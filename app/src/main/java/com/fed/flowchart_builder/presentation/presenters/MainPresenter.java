@@ -42,14 +42,14 @@ public class MainPresenter {
     }
 
 
-    public void prepareChartToShare(String chartName) {
+    public void prepareChartToShare(final String chartName) {
         ChartLiveData<List<ChartBlock>> blocksLiveData = new ChartLiveData<>();
         blocksLiveData.observe(mView, new Observer<List<ChartBlock>>() {
             @Override
             public void onChanged(List<ChartBlock> blocks) {
                 mIsBlocksLoaded = true;
                 mBlocks = blocks;
-                chartIsLoaded();
+                chartIsLoaded(chartName);
             }
         });
         mRepository.getBlocksByChartName(blocksLiveData, chartName);
@@ -59,13 +59,13 @@ public class MainPresenter {
             public void onChanged(List<ChartLine> lines) {
                 mIsLinesLoaded = true;
                 mLines = lines;
-                chartIsLoaded();
+                chartIsLoaded(chartName);
             }
         });
         mRepository.getLinesByChartName(linesLiveData, chartName);
     }
 
-    private void chartIsLoaded() {
+    private void chartIsLoaded(String chartName) {
         if (mIsBlocksLoaded && mIsLinesLoaded) {
             FlowChartViewGroup flowChartViewGroup = new FlowChartViewGroup(mView.getContext());
 
@@ -135,7 +135,7 @@ public class MainPresenter {
             flowChartViewGroup.layout((int) l, (int) t, (int) r, (int) b);
             flowChartViewGroup.draw(canvas);
 
-            mView.shareChart(bitmap);
+            mView.shareChart(bitmap, chartName);
         }
     }
 

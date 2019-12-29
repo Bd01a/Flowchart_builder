@@ -374,7 +374,7 @@ public class SimpleLineView extends View {
                         bottomToRight(start, end, nextStart, nextEnd, leftX1, rightX1, rightX2, topY2, bottomY2, bottomY1);
                         break;
                     case TOP:
-                        bottomToTop(start, end, nextStart, nextEnd, leftX2, rightX2, leftX1, rightX1, topY2, bottomY1);
+                        bottomToTop(start, end, nextStart, nextEnd, leftX2, rightX2, leftX1, rightX1, topY2, bottomY2, topY1, bottomY1);
                         break;
                     case LEFT:
                         bottomToLeft(start, end, nextStart, nextEnd, leftX2, leftX1, rightX1, topY2, bottomY2, bottomY1);
@@ -467,9 +467,14 @@ public class SimpleLineView extends View {
                     nextEnd.x = nextStart.x;
                 }
             }
+            if (end.y < bottomY1) {
+                nextEnd.y = bottomY1;
+                end.y = nextEnd.y;
+            }
         } else {
             nextStart.y = bottomY2 + (topY1 - bottomY2) / 2;
             nextEnd.y = nextStart.y;
+
         }
     }
 
@@ -574,18 +579,18 @@ public class SimpleLineView extends View {
      * @param topY1 Y coordinate of the top side of {@link SimpleLineView#mBlock1}
      */
     private void rightToLeft(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1, float bottomY1) {
-        if (rightX1 < leftX2 + 2 * mDistanceBlockLine && rightX1 > leftX2) {
-            nextStart.x = rightX2 + (leftX1 - rightX2) / 2;
+        if (rightX1 < leftX2 + mDistanceBlockLine * 2 && rightX1 > leftX2) {
+            nextStart.x = rightX1 + (leftX2 - rightX1) / 2;
             nextEnd.x = nextStart.x;
             end.x = nextEnd.x;
             start.x = nextStart.x;
         } else if (rightX1 < leftX2) {
             nextStart.x = rightX1 + (leftX2 - rightX1) / 2;
             nextEnd.x = nextStart.x;
-        } else if (topY1 > bottomY2) {
+        } else if (topY1 + mDistanceBlockLine * 2 > bottomY2) {
             nextStart.y = bottomY2 + (topY1 - bottomY2) / 2;
             nextEnd.y = nextStart.y;
-        } else if (bottomY1 < topY2) {
+        } else if (bottomY1 < topY2 + mDistanceBlockLine * 2) {
             nextStart.y = bottomY1 + (topY2 - bottomY1) / 2;
             nextEnd.y = nextStart.y;
         } else {
@@ -595,6 +600,10 @@ public class SimpleLineView extends View {
             } else {
                 nextStart.y = Math.max(bottomY1, bottomY2);
                 nextEnd.y = nextStart.y;
+            }
+            if (end.x > leftX1) {
+                nextEnd.x = leftX1;
+                end.x = nextEnd.x;
             }
         }
     }
@@ -637,6 +646,10 @@ public class SimpleLineView extends View {
             } else {
                 nextStart.y = Math.max(bottomY1, bottomY2);
                 nextEnd.y = nextStart.y;
+            }
+            if (end.x < rightX1) {
+                nextEnd.x = rightX1;
+                end.x = nextEnd.x;
             }
         }
     }
@@ -1119,7 +1132,7 @@ public class SimpleLineView extends View {
      * @param topY2 Y coordinate of the top side of {@link SimpleLineView#mBlock2}
      * @param bottomY1 Y coordinate of the bottom side of {@link SimpleLineView#mBlock1}
      */
-    private void bottomToTop(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY1) {
+    private void bottomToTop(PointF start, PointF end, PointF nextStart, PointF nextEnd, float leftX2, float rightX2, float leftX1, float rightX1, float topY2, float bottomY2, float topY1, float bottomY1) {
         if (bottomY1 < topY2 + 2 * mDistanceBlockLine && bottomY1 > topY2) {
             start.y = bottomY1 + (topY2 - bottomY1) / 2;
             nextStart.y = start.y;
@@ -1140,10 +1153,15 @@ public class SimpleLineView extends View {
                     nextStart.x = Math.min(leftX1, leftX2);
                     nextEnd.x = nextStart.x;
                 }
+                if (end.y > topY1) {
+                    nextEnd.y = topY1;
+                    end.y = nextEnd.y;
+                }
             }
         } else {
             nextStart.y = bottomY1 + (topY2 - bottomY1) / 2;
             nextEnd.y = nextStart.y;
+
         }
     }
 
