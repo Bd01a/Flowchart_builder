@@ -12,9 +12,11 @@ import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -122,6 +124,9 @@ public class SimpleLineView extends View {
      */
     private float mDistanceBlockLine;
 
+    //TODO внести в атрибуты
+    private float mWidthLineSelectoion = 10;
+
 
     /**
      * the first block that connects this line
@@ -171,6 +176,10 @@ public class SimpleLineView extends View {
 
         @Override
         public boolean onDown(MotionEvent e) {
+            Log.d(TAG, "onDown: ");
+            if (isInLine(e.getX(), e.getY())) {
+                Toast.makeText(getContext(), "in line", Toast.LENGTH_SHORT).show();
+            }
             return mIsDrawDeleteIcon && isInRect(mDeleteIconRect, e.getX(), e.getY());
         }
     });
@@ -300,6 +309,7 @@ public class SimpleLineView extends View {
 
         mPoints.add(firstPoint);
         mPoints.add(start);
+
         float leftX2 = mBlock2.getPosition().x - mBlock2.getOriginalWidth() / 2 - mDistanceBlockLine;
         float rightX2 = mBlock2.getPosition().x + mBlock2.getOriginalWidth() / 2 + mDistanceBlockLine;
 
@@ -311,6 +321,7 @@ public class SimpleLineView extends View {
 
         float topY1 = mBlock1.getPosition().y - mBlock1.getOriginalHeight() / 2 - mDistanceBlockLine;
         float bottomY1 = mBlock1.getPosition().y + mBlock1.getOriginalHeight() / 2 + mDistanceBlockLine;
+
         nextStart.x = start.x;
         nextStart.y = start.y;
         nextEnd.x = end.x;
@@ -1245,22 +1256,25 @@ public class SimpleLineView extends View {
 
         PointF point = new PointF();
 
+        float blockPositionX = blockView.getPosition().x;
+        float blockPositionY = blockView.getPosition().y;
+
         switch (side) {
             case TOP:
-                point.x = blockView.getPosition().x;
-                point.y = blockView.getPosition().y - height / 2;
+                point.x = blockPositionX;
+                point.y = blockPositionY + -height / 2;
                 break;
             case LEFT:
-                point.x = blockView.getPosition().x - width / 2;
-                point.y = blockView.getPosition().y;
+                point.x = blockPositionX - width / 2;
+                point.y = blockPositionY;
                 break;
             case RIGHT:
-                point.x = blockView.getPosition().x + width / 2;
-                point.y = blockView.getPosition().y;
+                point.x = blockPositionX + width / 2;
+                point.y = blockPositionY;
                 break;
             case BOTTOM:
-                point.x = blockView.getPosition().x;
-                point.y = blockView.getPosition().y + height / 2;
+                point.x = blockPositionX;
+                point.y = blockPositionY + height / 2;
                 break;
         }
         return point;
@@ -1364,6 +1378,30 @@ public class SimpleLineView extends View {
             drawIcon(canvas, mDeleteIcon, mDeleteIconPosition, mDeleteIconRect);
         }
 
+    }
+
+    private boolean isInLine(float x, float y) {
+        for (int i = 1; i < mPoints.size(); i++) {
+            PointF pOne = mPoints.get(i - 1);
+            PointF pTwo = mPoints.get(i);
+
+            RectF aroundLineRect = new RectF(
+                    Math.min(pOne.x, pTwo.x),
+                    Math.min(pOne.y, pTwo.y),
+                    Math.max(pOne.x, pTwo.x),
+                    Math.max(pOne.y, pTwo.y));
+            if (aroundLineRect.left == aroundLineRect.right) {
+                aroundLineRect.left -= mWidthLineSelectoion / 2;
+                aroundLineRect.right += mWidthLineSelectoion / 2;
+            } else if (aroundLineRect.top == aroundLineRect.bottom) {
+                aroundLineRect.top -= mWidthLineSelectoion / 2;
+                aroundLineRect.bottom += mWidthLineSelectoion / 2;
+            }
+            if (isInRect(aroundLineRect, x, y)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

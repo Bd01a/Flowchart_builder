@@ -17,9 +17,9 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.fed.flowchart_builder.ChartProvider;
 import com.fed.flowchart_builder.R;
 import com.fed.flowchart_builder.data.ChartLiveData;
+import com.fed.flowchart_builder.data.ChartProvider;
 import com.fed.flowchart_builder.presentation.adapters.ChartsAdapter;
 import com.fed.flowchart_builder.presentation.fragments.AddChartDialogFragment;
 import com.fed.flowchart_builder.presentation.presenters.MainPresenter;

@@ -323,10 +323,19 @@ public abstract class SimpleBlockView extends View {
         float widthBeetwenFrameAndBlock = getResources().getDimension(R.dimen.width_between_frame_and_block);
         mCurStrokeWidth = mStrokeWidth * mParentScale;
 
-        mFrameRect.left = mRect.left - widthBeetwenFrameAndBlock;
-        mFrameRect.top = mRect.top - widthBeetwenFrameAndBlock;
-        mFrameRect.right = mRect.right + widthBeetwenFrameAndBlock;
-        mFrameRect.bottom = mRect.bottom + widthBeetwenFrameAndBlock;
+        float frameWidth = mRect.width() + 2 * widthBeetwenFrameAndBlock;
+        if (frameWidth < 2 * mIconSize) {
+            frameWidth = 2 * mIconSize;
+        }
+        float frameHeight = mRect.height() + 2 * widthBeetwenFrameAndBlock;
+        if (frameHeight < 2 * mIconSize) {
+            frameHeight = 2 * mIconSize;
+        }
+        mFrameRect.left = mRect.centerX() - frameWidth / 2;
+        mFrameRect.right = mRect.centerX() + frameWidth / 2;
+        mFrameRect.top = mRect.centerY() - frameHeight / 2;
+        mFrameRect.bottom = mRect.centerY() + frameHeight / 2;
+
 
         mDeleteIconRect.left = mFrameRect.left - mIconSize / 2;
         mDeleteIconRect.top = mFrameRect.top - mIconSize / 2;
@@ -344,8 +353,8 @@ public abstract class SimpleBlockView extends View {
         mAddLineIconRectBottom.bottom = mFrameRect.bottom + mIconSize / 2;
 
         mAddLineIconRectTop.left = mFrameRect.left + mFrameRect.width() / 2 - mIconSize / 2;
-        mAddLineIconRectTop.top = mFrameRect.top - mIconSize / 2;
         mAddLineIconRectTop.right = mFrameRect.left + mFrameRect.width() / 2 + mIconSize / 2;
+        mAddLineIconRectTop.top = mFrameRect.top - mIconSize / 2;
         mAddLineIconRectTop.bottom = mFrameRect.top + mIconSize / 2;
 
         mAddLineIconRectLeft.left = mFrameRect.left - mIconSize / 2;
@@ -358,15 +367,18 @@ public abstract class SimpleBlockView extends View {
         mAddLineIconRectRight.right = mFrameRect.right + mIconSize / 2;
         mAddLineIconRectRight.bottom = mFrameRect.top + mFrameRect.height() / 2 + mIconSize / 2;
 
-        mTranslation.x = widthBeetwenFrameAndBlock + mIconSize / 2 + mStrokeWidthFrame;
-        mTranslation.y = widthBeetwenFrameAndBlock + mIconSize / 2 + mStrokeWidthFrame;
+
+        mTranslation.x = -mDeleteIconRect.left + mStrokeWidthFrame;
+        mTranslation.y = -mDeleteIconRect.top + mStrokeWidthFrame;
         mCurTextSize = mTextSize * mParentScale;
         initPaint();
         initTextPaint();
 
         geomOptions.x = mRect.width() + 2 * mTranslation.x;
         geomOptions.y = mRect.height() + 2 * mTranslation.y;
+
     }
+
 
     public PointF getGeomOptions() {
         return geomOptions;
@@ -429,12 +441,35 @@ public abstract class SimpleBlockView extends View {
                                 ((FlowChartViewGroup) getParent()).setMode(FlowChartViewGroup.ViewGroupMode.CHILD_IN_ACTION);
                             }
                         }
-                        return true;
+
+
+                        if (isInRect(mRect, e.getX(), e.getY())) {
+                            return true;
+                        } else if (mIsSelected) {
+                            return
+                                    isInRect(mFrameRect, e.getX(), e.getY()) ||
+                                            isInRect(mDeleteIconRect, e.getX(), e.getY()) ||
+                                            isInRect(mResizeIconRect, e.getX(), e.getY()) ||
+                                            isInRect(mAddLineIconRectLeft, e.getX(), e.getY()) ||
+                                            isInRect(mAddLineIconRectRight, e.getX(), e.getY()) ||
+                                            isInRect(mAddLineIconRectTop, e.getX(), e.getY()) ||
+                                            isInRect(mAddLineIconRectBottom, e.getX(), e.getY());
+                        } else if (mIsShowAddIcons) {
+                            return isInRect(mAddLineIconRectLeft, e.getX(), e.getY()) ||
+                                    isInRect(mAddLineIconRectRight, e.getX(), e.getY()) ||
+                                    isInRect(mAddLineIconRectTop, e.getX(), e.getY()) ||
+                                    isInRect(mAddLineIconRectBottom, e.getX(), e.getY());
+                        }
+                        return false;
+
+
                     }
 
                     @Override
                     public void onLongPress(MotionEvent e) {
-                        dialogSettingsCreate();
+                        if (isInRect(mRect, e.getX(), e.getY())) {
+                            dialogSettingsCreate();
+                        }
                     }
 
                     @Override

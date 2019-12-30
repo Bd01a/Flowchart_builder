@@ -117,31 +117,31 @@ public class ChartBlock {
         return mPositionX;
     }
 
-    public void setPositionX(int mPositionX) {
-        this.mPositionX = mPositionX;
+    public void setPositionX(int positionX) {
+        mPositionX = positionX;
     }
 
     public int getPositionY() {
         return mPositionY;
     }
 
-    public void setPositionY(int mPositionY) {
-        this.mPositionY = mPositionY;
+    public void setPositionY(int positionY) {
+        mPositionY = positionY;
     }
 
     public int getBlockType() {
         return mBlockType;
     }
 
-    public void setBlockType(int mBlockType) {
-        this.mBlockType = mBlockType;
+    public void setBlockType(int blockType) {
+        mBlockType = blockType;
     }
 
     public String getText() {
         return mText;
     }
 
-    public void setText(String mText) {
-        this.mText = mText;
+    public void setText(String text) {
+        mText = text;
     }
 }
