@@ -23,6 +23,7 @@
     <style name="SimpleLineDefault">
         <item name="color_stroke_line">@color/color_stroke_default_line</item>
         <item name="stroke_width_line">@dimen/stroke_width_default_line</item>
+        <item name="width_line_selection">@dimen/width_default_line_selection</item>
     </style>
 
 </resources>

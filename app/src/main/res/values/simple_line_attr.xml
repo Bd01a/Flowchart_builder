@@ -3,5 +3,6 @@
     <declare-styleable name="SimpleLineView">
         <attr name="color_stroke_line" format="color" />
         <attr name="stroke_width_line" format="dimension" />
+        <attr name="width_line_selection" format="dimension" />
     </declare-styleable>
 </resources>

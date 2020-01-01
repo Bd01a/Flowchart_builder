@@ -12,11 +12,9 @@ import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,6 +36,7 @@ import java.util.List;
  *
  * @attr ref R.styleable#SimpleLine_color_stroke_line
  * @attr ref R.styleable#SimpleLine_stroke_width_line
+ * @attr ref R.styleable#SimpleLine_width_line_selection
  *
  * @author Sergey Fedorov
  */
@@ -124,8 +123,11 @@ public class SimpleLineView extends View {
      */
     private float mDistanceBlockLine;
 
-    //TODO внести в атрибуты
-    private float mWidthLineSelectoion = 10;
+
+    /**
+     * @attr ref R.styleable#SimpleLine_width_line_selection
+     */
+    private float mWidthLineSelectoion;
 
 
     /**
@@ -165,22 +167,35 @@ public class SimpleLineView extends View {
      */
     private PointF mTranslation = new PointF();
 
+
+    /**
+     * needed to iterate over all points in {@link SimpleLineView#drawSelected(Canvas)}
+     */
+    private PointF mP1 = new PointF();
+    /**
+     * needed to iterate over all points in {@link SimpleLineView#drawSelected(Canvas)}
+     */
+    private PointF mP2 = new PointF();
+    /**
+     * needed to iterate over all points in {@link SimpleLineView#drawSelected(Canvas)}
+     */
+    private PointF mP3 = new PointF();
+
     private GestureDetector mGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
             if (mIsDrawDeleteIcon && isInRect(mDeleteIconRect, e.getX(), e.getY())) {
                 deleteSelf();
+            } else if (isInLine(e.getX(), e.getY())) {
+                mIsDrawDeleteIcon = !mIsDrawDeleteIcon;
+                invalidate();
             }
             return true;
         }
 
         @Override
         public boolean onDown(MotionEvent e) {
-            Log.d(TAG, "onDown: ");
-            if (isInLine(e.getX(), e.getY())) {
-                Toast.makeText(getContext(), "in line", Toast.LENGTH_SHORT).show();
-            }
-            return mIsDrawDeleteIcon && isInRect(mDeleteIconRect, e.getX(), e.getY());
+            return isInLine(e.getX(), e.getY()) || isInRect(mDeleteIconRect, e.getX(), e.getY());
         }
     });
 
@@ -394,8 +409,12 @@ public class SimpleLineView extends View {
                 break;
         }
 
-        mPoints.add(nextStart);
-        mPoints.add(nextEnd);
+        if (!nextStart.equals(start)) {
+            mPoints.add(nextStart);
+        }
+        if (!nextEnd.equals(end)) {
+            mPoints.add(nextEnd);
+        }
         mPoints.add(end);
         mPoints.add(lastPoint);
         findMeasure();
@@ -1296,6 +1315,7 @@ public class SimpleLineView extends View {
         try {
             mStrokeColor = typedArray.getColor(R.styleable.SimpleLineView_color_stroke_line, 0);
             mStrokeWidth = typedArray.getDimension(R.styleable.SimpleLineView_stroke_width_line, 0);
+            mWidthLineSelectoion = typedArray.getDimension(R.styleable.SimpleLineView_width_line_selection, 0);
         } finally {
             typedArray.recycle();
         }
@@ -1375,21 +1395,91 @@ public class SimpleLineView extends View {
             }
         }
         if (mIsDrawDeleteIcon) {
-            drawIcon(canvas, mDeleteIcon, mDeleteIconPosition, mDeleteIconRect);
+            drawSelected(canvas);
         }
+
 
     }
 
+    private void drawSelected(Canvas canvas) {
+        float scale = mViewGroup.getCurrentScale();
+
+        float signLast = 0;
+
+        for (int i = 1; i < mPoints.size(); i++) {
+
+            mP1.x = mPoints.get(i - 1).x * scale;
+            mP1.y = mPoints.get(i - 1).y * scale;
+
+            mP2.x = mPoints.get(i).x * scale;
+            mP2.y = mPoints.get(i).y * scale;
+
+            mP3.x = mP2.x;
+            mP3.y = mP2.y;
+            if (i != mPoints.size() - 1) {
+                mP3.x = mPoints.get(i + 1).x * scale;
+                mP3.y = mPoints.get(i + 1).y * scale;
+            }
+
+
+            if (mP1.x == mP2.x) {
+                float left = mP1.x - mWidthLineSelectoion / 2;
+                float right = mP1.x + mWidthLineSelectoion / 2;
+                canvas.drawLine(
+                        left,
+                        mP1.y + Math.signum(mP2.y - mP1.y) * signLast * mWidthLineSelectoion / 2,
+                        left,
+                        mP2.y + Math.signum(mP3.x - mP2.x) * Math.signum(mP2.y - mP1.y) * mWidthLineSelectoion / 2
+                                + Math.signum(mP2.y - mP1.y) * mFramePaint.getStrokeWidth() / 2,
+                        mFramePaint);
+                canvas.drawLine(
+                        right,
+                        mP1.y - Math.signum(mP2.y - mP1.y) * signLast * mWidthLineSelectoion / 2,
+                        right,
+                        mP2.y - Math.signum(mP3.x - mP2.x) * Math.signum(mP2.y - mP1.y) * mWidthLineSelectoion / 2
+                                + Math.signum(mP2.y - mP1.y) * mFramePaint.getStrokeWidth() / 2,
+                        mFramePaint);
+                signLast = mP3.x != mP1.x ? Math.signum(mP3.y - (mP1.y + (mP2.y - mP1.y) / 2)) : 0;
+
+
+            } else if (mP1.y == mP2.y) {
+                float top = mP1.y - mWidthLineSelectoion / 2;
+                float bottom = mP1.y + mWidthLineSelectoion / 2;
+                canvas.drawLine(
+                        mP1.x + Math.signum(mP2.x - mP1.x) * signLast * mWidthLineSelectoion / 2,
+                        top,
+                        mP2.x + Math.signum(mP3.y - mP2.y) * Math.signum(mP2.x - mP1.x) * mWidthLineSelectoion / 2
+                                + Math.signum(mP2.x - mP1.x) * mFramePaint.getStrokeWidth() / 2,
+                        top,
+                        mFramePaint);
+                canvas.drawLine(
+                        mP1.x - Math.signum(mP2.x - mP1.x) * signLast * mWidthLineSelectoion / 2,
+                        bottom,
+                        mP2.x - Math.signum(mP3.y - mP2.y) * Math.signum(mP2.x - mP1.x) * mWidthLineSelectoion / 2
+                                + Math.signum(mP2.x - mP1.x) * mFramePaint.getStrokeWidth() / 2,
+                        bottom,
+                        mFramePaint);
+                signLast = mP3.y != mP1.y ? Math.signum(mP3.x - (mP1.x + (mP2.x - mP1.x) / 2)) : 0;
+            }
+        }
+
+
+        drawIcon(canvas, mDeleteIcon, mDeleteIconPosition, mDeleteIconRect);
+    }
+
     private boolean isInLine(float x, float y) {
+
+        float scale = mViewGroup.getCurrentScale();
+
         for (int i = 1; i < mPoints.size(); i++) {
             PointF pOne = mPoints.get(i - 1);
             PointF pTwo = mPoints.get(i);
 
             RectF aroundLineRect = new RectF(
-                    Math.min(pOne.x, pTwo.x),
-                    Math.min(pOne.y, pTwo.y),
-                    Math.max(pOne.x, pTwo.x),
-                    Math.max(pOne.y, pTwo.y));
+                    Math.min(pOne.x * scale, pTwo.x * scale),
+                    Math.min(pOne.y * scale, pTwo.y * scale),
+                    Math.max(pOne.x * scale, pTwo.x * scale),
+                    Math.max(pOne.y * scale, pTwo.y * scale));
             if (aroundLineRect.left == aroundLineRect.right) {
                 aroundLineRect.left -= mWidthLineSelectoion / 2;
                 aroundLineRect.right += mWidthLineSelectoion / 2;
@@ -1400,6 +1490,9 @@ public class SimpleLineView extends View {
             if (isInRect(aroundLineRect, x, y)) {
                 return true;
             }
+//            if (aroundLineRect.contains( x, y)) {
+//                return true;
+//            }
         }
         return false;
     }
