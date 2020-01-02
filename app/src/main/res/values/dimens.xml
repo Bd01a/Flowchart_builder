@@ -24,7 +24,7 @@
     <dimen name="margin_card_chart_item">4dp</dimen>
     <dimen name="margin_recycler_view_activity_main">8dp</dimen>
     <dimen name="padding_text_view_chart_item">4dp</dimen>
-    <dimen name="width_default_line_selection">12dp</dimen>
+    <dimen name="width_default_line_selection">16dp</dimen>
 
     <integer name="x_default_block">0</integer>
     <integer name="y_default_block">0</integer>

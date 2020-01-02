@@ -416,9 +416,7 @@ public abstract class SimpleBlockView extends View {
                             }
                         }
                         setIsSelected(!mIsSelected);
-                        if (mIsSelected) {
-                            ((FlowChartViewGroup) getParent()).selectChild(SimpleBlockView.this);
-                        } else {
+                        if (!mIsSelected) {
                             ((FlowChartViewGroup) getParent()).setMode(FlowChartViewGroup.ViewGroupMode.FREE);
                         }
 
@@ -736,6 +734,7 @@ public abstract class SimpleBlockView extends View {
             mBlockMode = BlockMode.FREE;
             invalidate();
         } else {
+            ((FlowChartViewGroup) getParent()).setSelectedBlockView(SimpleBlockView.this);
             getParent().bringChildToFront(this);
         }
     }
@@ -782,6 +781,8 @@ public abstract class SimpleBlockView extends View {
 
         ss.mText = mText;
         ss.mTextSize = mTextSize;
+
+        ss.mIsSelected = mIsSelected ? 1 : 0;
         return ss;
     }
 
@@ -825,6 +826,8 @@ public abstract class SimpleBlockView extends View {
         mPosition.y = ss.mPositionY;
         mText = ss.mText;
         mTextSize = ss.mTextSize;
+
+        setIsSelected(ss.mIsSelected != 0);
     }
 
     /**
@@ -881,6 +884,8 @@ public abstract class SimpleBlockView extends View {
         int mBlockType;
         String mText;
 
+        int mIsSelected;
+
         BlockSavedState(Parcelable superState) {
             super(superState);
         }
@@ -899,6 +904,7 @@ public abstract class SimpleBlockView extends View {
             mPositionY = in.readInt();
             mBlockType = in.readInt();
             mText = in.readString();
+            mIsSelected = in.readInt();
 
         }
 
@@ -920,6 +926,7 @@ public abstract class SimpleBlockView extends View {
             out.writeInt(mPositionY);
             out.writeInt(mBlockType);
             out.writeString(mText);
+            out.writeInt(mIsSelected);
 
         }
     }

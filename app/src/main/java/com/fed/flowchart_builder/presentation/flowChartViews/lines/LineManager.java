@@ -2,6 +2,8 @@ package com.fed.flowchart_builder.presentation.flowChartViews.lines;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import com.fed.flowchart_builder.presentation.flowChartViews.FlowChartViewGroup;
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 
@@ -40,7 +42,7 @@ public class LineManager {
      */
     private SimpleLineView.BlockSide mSide1;
 
-    private boolean mIsDrawDeleteIcons;
+    private SimpleLineView mSelectedLineView;
 
     public LineManager(Context context, FlowChartViewGroup flowChartViewGroup) {
         mLines = new ArrayList<>();
@@ -88,20 +90,42 @@ public class LineManager {
         }
     }
 
-    /**
-     * calls {@link SimpleLineView#isDrawDeleteIcon(boolean)} at all {@link LineManager#mLines}
-     */
-    public void showDeleteIcons(boolean isShow) {
-        mIsDrawDeleteIcons = isShow;
-        for (SimpleLineView line : mLines) {
-            line.isDrawDeleteIcon(isShow);
-            line.invalidate();
+//    /**
+//     * calls {@link SimpleLineView#isDrawDeleteIcon(boolean)} at all {@link LineManager#mLines}
+//     */
+//    public void showDeleteIcons(boolean isShow) {
+//        mIsDrawDeleteIcons = isShow;
+//        for (SimpleLineView line : mLines) {
+//            line.isDrawDeleteIcon(isShow);
+//            line.invalidate();
+//        }
+//    }
+
+
+    public void setSelectedLineView(@Nullable SimpleLineView simpleLineView) {
+        if (mSelectedLineView != null) {
+            mSelectedLineView.setSelected(false);
+        }
+        if (simpleLineView != null) {
+            mViewGroup.setSelectedBlockView(null);
+        }
+        mSelectedLineView = simpleLineView;
+    }
+
+    public void restoreLine(int i, SimpleLineView.LineSavedState savedState) {
+        SimpleBlockView blockView1 = (SimpleBlockView) mViewGroup.getChildAt(i + savedState.getNumBlock1());
+        SimpleBlockView blockView2 = (SimpleBlockView) mViewGroup.getChildAt(i + savedState.getNumBlock2());
+
+        SimpleLineView.BlockSide side1 = SimpleLineView.BlockSide.getBlockSide(savedState.getSide1());
+        SimpleLineView.BlockSide side2 = SimpleLineView.BlockSide.getBlockSide(savedState.getSide2());
+
+        addBlock(blockView1, side1);
+        addBlock(blockView2, side2);
+        if (savedState.mIsSelected != 0) {
+            mLines.get(mLines.size() - 1).setSelected(true);
         }
     }
 
-    public boolean isDrawDeleteIcons() {
-        return mIsDrawDeleteIcons;
-    }
 
     /**
      * check all {@link LineManager#mLines} for nulls in related {@link SimpleBlockView}

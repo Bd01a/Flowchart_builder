@@ -155,7 +155,6 @@ public class SimpleLineView extends View {
     /**
      * determines whether the delete icon will be drawn
      */
-    private boolean mIsDrawDeleteIcon;
     private Drawable mDeleteIcon;
     private PointF mDeleteIconPosition = new PointF();
     private RectF mDeleteIconRect = new RectF();
@@ -167,6 +166,7 @@ public class SimpleLineView extends View {
      */
     private PointF mTranslation = new PointF();
 
+    private boolean mIsSelected;
 
     /**
      * needed to iterate over all points in {@link SimpleLineView#drawSelected(Canvas)}
@@ -184,11 +184,10 @@ public class SimpleLineView extends View {
     private GestureDetector mGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            if (mIsDrawDeleteIcon && isInRect(mDeleteIconRect, e.getX(), e.getY())) {
+            if (mIsSelected && isInRect(mDeleteIconRect, e.getX(), e.getY())) {
                 deleteSelf();
             } else if (isInLine(e.getX(), e.getY())) {
-                mIsDrawDeleteIcon = !mIsDrawDeleteIcon;
-                invalidate();
+                setSelected(!mIsSelected);
             }
             return true;
         }
@@ -216,11 +215,18 @@ public class SimpleLineView extends View {
     }
 
     /**
-     * assigns a value to a variable {@link SimpleLineView#mIsDrawDeleteIcon},
+     * assigns a value to a variable {@link SimpleLineView#mIsSelected},
      * which determines whether the delete icon will be drawn
      */
-    public void isDrawDeleteIcon(boolean isDrawDeleteIcon) {
-        mIsDrawDeleteIcon = isDrawDeleteIcon;
+    public void setSelected(boolean isSelected) {
+        if (isSelected) {
+            mViewGroup.getLineManager().setSelectedLineView(this);
+            mViewGroup.bringChildToFront(this);
+            mViewGroup.bringChildToFront(mBlock1);
+            mViewGroup.bringChildToFront(mBlock2);
+        }
+        mIsSelected = isSelected;
+        invalidate();
     }
 
     public float getLineWidth() {
@@ -1394,7 +1400,7 @@ public class SimpleLineView extends View {
                 }
             }
         }
-        if (mIsDrawDeleteIcon) {
+        if (mIsSelected) {
             drawSelected(canvas);
         }
 
@@ -1627,6 +1633,7 @@ public class SimpleLineView extends View {
         ss.mNumBlock2 = mViewGroup.getNumberBlockChild(mBlock2);
         ss.mSide1 = mSide1.getNum();
         ss.mSide2 = mSide2.getNum();
+        ss.mIsSelected = mIsSelected ? 1 : 0;
         return ss;
     }
 
@@ -1685,10 +1692,13 @@ public class SimpleLineView extends View {
                 return new LineSavedState[size];
             }
         };
+
         int mNumBlock1;
         int mNumBlock2;
         int mSide1;
         int mSide2;
+
+        int mIsSelected;
 
         LineSavedState(Parcelable superState) {
             super(superState);
@@ -1702,6 +1712,7 @@ public class SimpleLineView extends View {
             mNumBlock2 = in.readInt();
             mSide1 = in.readInt();
             mSide2 = in.readInt();
+            mIsSelected = in.readInt();
         }
 
         public int getNumBlock1() {
@@ -1728,6 +1739,7 @@ public class SimpleLineView extends View {
             out.writeInt(mNumBlock2);
             out.writeInt(mSide1);
             out.writeInt(mSide2);
+            out.writeInt(mIsSelected);
 
         }
     }

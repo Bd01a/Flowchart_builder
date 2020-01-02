@@ -18,6 +18,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Scroller;
 
+import androidx.annotation.Nullable;
+
 import com.fed.flowchart_builder.data.BlockDescription;
 import com.fed.flowchart_builder.presentation.flowChartViews.blocks.SimpleBlockView;
 import com.fed.flowchart_builder.presentation.flowChartViews.lines.LineManager;
@@ -150,10 +152,14 @@ public class FlowChartViewGroup extends ViewGroup {
     }
 
 
-    public void selectChild(SimpleBlockView view) {
-        if (!view.equals(mCurrentSelectedView) && mCurrentSelectedView != null) {
+    public void setSelectedBlockView(@Nullable SimpleBlockView view) {
+        if ((view == null && mCurrentSelectedView != null) ||
+                (view != null && !view.equals(mCurrentSelectedView) && mCurrentSelectedView != null)) {
             mCurrentSelectedView.setIsSelected(false);
             invalidate();
+        }
+        if (view != null) {
+            mLineManager.setSelectedLineView(null);
         }
         mCurrentSelectedView = view;
     }
@@ -233,12 +239,12 @@ public class FlowChartViewGroup extends ViewGroup {
                         return true;
                     }
 
-                    @Override
-                    public void onLongPress(MotionEvent e) {
-                        super.onLongPress(e);
-
-                        mLineManager.showDeleteIcons(!mLineManager.isDrawDeleteIcons());
-                    }
+//                    @Override
+//                    public void onLongPress(MotionEvent e) {
+//                        super.onLongPress(e);
+//
+//                        mLineManager.showDeleteIcons(!mLineManager.isDrawDeleteIcons());
+//                    }
 
                     @Override
                     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
@@ -391,18 +397,11 @@ public class FlowChartViewGroup extends ViewGroup {
         mLineManager = new LineManager(getContext(), this);
         for (int i = 0; i < ss.mLines.size(); i++) {
             SimpleLineView.LineSavedState savedState = (SimpleLineView.LineSavedState) ss.mLines.get(i);
-            SimpleBlockView blockView1 = (SimpleBlockView) getChildAt(i + savedState.getNumBlock1());
-            SimpleBlockView blockView2 = (SimpleBlockView) getChildAt(i + savedState.getNumBlock2());
-
-            SimpleLineView.BlockSide side1 = SimpleLineView.BlockSide.getBlockSide(savedState.getSide1());
-            SimpleLineView.BlockSide side2 = SimpleLineView.BlockSide.getBlockSide(savedState.getSide2());
-
-            mLineManager.addBlock(blockView1, side1);
-            mLineManager.addBlock(blockView2, side2);
-
+            mLineManager.restoreLine(i, savedState);
         }
 
     }
+
 
     @Override
     protected void dispatchSaveInstanceState(SparseArray<Parcelable> container) {
